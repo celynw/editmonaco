@@ -14,6 +14,7 @@
 import asyncio
 import codecs
 import http.server
+import logging
 import os
 import threading
 import webbrowser
@@ -160,7 +161,7 @@ class EditMonacoPlugin(BeetsPlugin):
             "",
             self.websocket_port,
         )
-        print(f"Serving websocket on port {self.websocket_port}")
+        logging.info("Serving websocket on port %s", self.websocket_port)
         await self.websocket_server.wait_closed()
 
     def serve_http(self):
@@ -171,7 +172,7 @@ class EditMonacoPlugin(BeetsPlugin):
             nonlocal server_ready
             with http.server.HTTPServer(("", self.http_port), handler) as httpd:
                 server_ready.set()
-                print(f"Serving HTTP on port {self.http_port}")
+                logging.info("Serving HTTP on port %s", self.http_port)
                 httpd.serve_forever()
 
         server_thread = threading.Thread(target=_server_thread)
@@ -183,7 +184,7 @@ class EditMonacoPlugin(BeetsPlugin):
     async def handler(self, websocket) -> None:
         while True:
             message = await websocket.recv()
-            print(message)
+            logging.debug(message)
             if message == "Message from web interface!":
                 await self.populate_websocket(websocket)
             elif message == "Success":
@@ -303,11 +304,11 @@ class EditMonacoPlugin(BeetsPlugin):
         self.tempfile.close()
 
         # NEW: Start servers and send the metadata
-        print("Starting HTTP server")
+        logging.info("Starting HTTP server")
         self.server_http_thread = threading.Thread(target=self.serve_http, daemon=True)
         self.server_http_thread.start()
 
-        print("Starting websocket server")
+        logging.info("Starting websocket server")
         asyncio.run(self.serve_websocket())
 
         # Remove the temporary file before returning
