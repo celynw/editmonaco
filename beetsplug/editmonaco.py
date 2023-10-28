@@ -1,48 +1,57 @@
+import asyncio
 import http.server
-import signal
-import socketserver
 import threading
 import webbrowser
+from urllib.parse import urlparse
 
+import websockets
 from beets.plugins import BeetsPlugin
 from beets.ui import Subcommand
 
 
 class EditMonacoPlugin(BeetsPlugin):
-    port = 8888
+    http_port = 8888
+    websocket_port = 8889
     http_server = None
-    server_stopped = threading.Event()  # Event to signal server stop
+    http_server_stopped = threading.Event()
 
     def commands(self):
-        command = Subcommand("editmonaco", help="do something super")
+        command = Subcommand("editmonaco", help="Launch monaco editors")
         command.func = self.test_command
         return [command]
 
     def test_command(self, lib, opts, args):
-        # Start the HTTP server in a separate thread
-        http_server_thread = threading.Thread(target=self.serve_http)
-        http_server_thread.start()
+        print("Starting HTTP server")
+        self.server_http_thread = threading.Thread(target=self.serve_http, daemon=True)
+        self.server_http_thread.start()
 
-        # Set up a signal handler for SIGINT
-        signal.signal(signal.SIGINT, self.signal_handler)
+        print("Starting websocket server")
+        asyncio.run(self.serve_websocket())
 
-        print("Hello everybody! I'm a plugin!")
-
-        # Wait until the server is manually stopped
-        self.server_stopped.wait()
+    async def serve_websocket(self):
+        self.websocket_server = await websockets.serve(
+            self.handler,
+            "",
+            self.websocket_port,
+        )
+        print(f"Serving websocket on port {self.websocket_port}")
+        await self.websocket_server.wait_closed()
 
     def serve_http(self):
-        # Serve your HTML file on a specific port
         handler = http.server.SimpleHTTPRequestHandler
-        with socketserver.TCPServer(("", self.port), handler) as httpd:
-            print(f"Serving on port: {self.port}")
+        with http.server.HTTPServer(("", self.http_port), handler) as httpd:
             self.http_server = httpd
-            self.server_stopped.clear()  # Clear the event flag
-            httpd.serve_forever()  # Serve forever until interrupted
+            self.http_server_stopped.clear()
+            print(f"Serving HTTP on port {self.http_port}")
+            httpd.serve_forever()
+            # webbrowser.open(f"http://localhost:{self.port}")
 
-    def signal_handler(self, sig, frame):
-        # Gracefully shut down the HTTP server when SIGINT is received
-        if self.http_server:
-            print("Shutting down the server gracefully...")
-            self.http_server.shutdown()
-            self.server_stopped.set()  # Set the event flag to exit the main thread
+    async def handler(self, websocket):
+        while True:
+            message = await websocket.recv()
+            print(message)
+
+
+if __name__ == "__main__":
+    plugin = EditMonacoPlugin()
+    plugin.test_command(None, None, None)

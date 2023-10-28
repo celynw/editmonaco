@@ -26,4 +26,10 @@ require(["vs/editor/editor.main"], function () {
         language: "javascript",
         theme: "dark-theme" // Apply the dark theme
     });
+
+    var socket = new WebSocket("ws://localhost:8889");
+    socket.onopen = function () {
+        alert("Socket connected!");
+        socket.send("Message from web interface!");
+    };
 });
