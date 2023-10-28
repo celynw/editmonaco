@@ -39,12 +39,20 @@ class EditMonacoPlugin(BeetsPlugin):
 
     def serve_http(self):
         handler = http.server.SimpleHTTPRequestHandler
-        with http.server.HTTPServer(("", self.http_port), handler) as httpd:
-            self.http_server = httpd
-            self.http_server_stopped.clear()
-            print(f"Serving HTTP on port {self.http_port}")
-            httpd.serve_forever()
-            # webbrowser.open(f"http://localhost:{self.port}")
+        server_ready = threading.Event()
+
+        def _server_thread() -> None:
+            nonlocal server_ready
+            with http.server.HTTPServer(("", self.http_port), handler) as httpd:
+                server_ready.set()
+                print(f"Serving HTTP on port {self.http_port}")
+                httpd.serve_forever()
+
+        server_thread = threading.Thread(target=_server_thread)
+        server_thread.daemon = True
+        server_thread.start()
+        server_ready.wait()
+        webbrowser.open(f"http://localhost:{self.http_port}")
 
     async def handler(self, websocket):
         while True:
