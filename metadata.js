@@ -32,4 +32,8 @@ require(["vs/editor/editor.main"], function () {
         alert("Socket connected!");
         socket.send("Message from web interface!");
     };
+    socket.onmessage = function (event) {
+        // When a message is received, update the content of the first editor
+        editor1.setValue(event.data);
+    };
 });

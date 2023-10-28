@@ -50,6 +50,8 @@ class EditMonacoPlugin(BeetsPlugin):
         while True:
             message = await websocket.recv()
             print(message)
+            if message == "Message from web interface!":
+                await websocket.send("Message from server!")
 
 
 if __name__ == "__main__":
