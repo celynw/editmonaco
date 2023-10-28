@@ -15,9 +15,9 @@ import asyncio
 import codecs
 import http.server
 import logging
-import os
 import threading
 import webbrowser
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import websockets
@@ -312,7 +312,7 @@ class EditMonacoPlugin(BeetsPlugin):
         asyncio.run(self.serve_websocket())
 
         # Remove the temporary file before returning
-        os.remove(new.name)
+        Path(self.tempfile.name).unlink()
 
         return self.success
 

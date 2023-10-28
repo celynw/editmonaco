@@ -10,19 +10,19 @@ require(["vs/editor/editor.main"], function () {
     });
 
     var editor1 = monaco.editor.create(document.getElementById("editor1"), {
-        value: "Editor 1: Your code here",
+        value: "",
         language: "javascript",
         theme: "dark-theme" // Apply the dark theme
     });
 
     var editor2 = monaco.editor.create(document.getElementById("editor2"), {
-        value: "Editor 2: Your code here",
+        value: "",
         language: "javascript",
         theme: "dark-theme" // Apply the dark theme
     });
 
     var editor3 = monaco.editor.create(document.getElementById("editor3"), {
-        value: "Editor 3: Your code here",
+        value: "",
         language: "javascript",
         theme: "dark-theme" // Apply the dark theme
     });
