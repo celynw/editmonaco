@@ -98,10 +98,11 @@ def apply_(obj, data):
 
 
 class EditMonacoPlugin(BeetsPlugin):
-    http_port = 8888
-    websocket_port = 8889
+    http_port: int = 8888
+    websocket_port: int = 8889
     http_server = None
-    tempfile = None
+    tempfile: Path
+    fields: list[str] = []
 
     def __init__(self):
         super().__init__()
@@ -192,11 +193,14 @@ class EditMonacoPlugin(BeetsPlugin):
                 return
 
     async def populate_websocket(self, websocket):
-        # Read data from self.tempfile and send it
-        with codecs.open(self.tempfile.name, encoding="utf-8") as f:
+        # Set up editors with fields first
+        await websocket.send(json.dumps({"fields": self.fields}))
+
+        # Read data from temporary file
+        with Path(self.tempfile.name).open() as f:
             data = f.read()
 
-        await websocket.send(data)
+        # await websocket.send(data)
 
         # # Loop until we have parseable data and the user confirms
         # try:
@@ -284,18 +288,16 @@ class EditMonacoPlugin(BeetsPlugin):
         if success:
             self.save_changes(objs)
 
-    def edit_objects(self, objs, fields) -> bool:
+    def edit_objects(self, objs: list[dict], fields: list[str]) -> bool:
         """
         Dump a set of Model objects to a file as text, ask the user to edit it, and apply any changes to the objects.
         Return a boolean indicating whether the edit succeeded.
         """
-        # Get the content to edit as raw data structures
-        old_data = [flatten(o, fields) for o in objs]
-
+        self.fields = fields
         # Set up a temporary file with the initial data for editing
         self.tempfile = NamedTemporaryFile(
             mode="w",
-            suffix=".yaml",
+            suffix=".json",
             delete=False,
             encoding="utf-8",
         )
@@ -415,4 +417,10 @@ class EditMonacoPlugin(BeetsPlugin):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     plugin = EditMonacoPlugin()
-    plugin.test_command(None, None, None)
+    plugin.edit_objects(
+        [
+            {"title": "title1", "artist": "artist1", "track": 1},
+            {"title": "title2", "artist": "artist2", "track": 2},
+        ],
+        ["title", "artist"],
+    )

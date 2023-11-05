@@ -9,31 +9,33 @@ require(["vs/editor/editor.main"], function () {
         colors: {}
     });
 
-    var editor1 = monaco.editor.create(document.getElementById("editor1"), {
-        value: "",
-        language: "javascript",
-        theme: "dark-theme" // Apply the dark theme
-    });
-
-    var editor2 = monaco.editor.create(document.getElementById("editor2"), {
-        value: "",
-        language: "javascript",
-        theme: "dark-theme" // Apply the dark theme
-    });
-
-    var editor3 = monaco.editor.create(document.getElementById("editor3"), {
-        value: "",
-        language: "javascript",
-        theme: "dark-theme" // Apply the dark theme
-    });
-
     var socket = new WebSocket("ws://localhost:8889");
     socket.onopen = function () {
-        alert("Socket connected!");
+        // alert("Socket connected!");
         socket.send("Message from web interface!");
     };
     socket.onmessage = function (event) {
-        // When a message is received, update the content of the first editor
-        editor1.setValue(event.data);
+        // All messages will be JSON
+        var message = JSON.parse(event.data);
+        // alert(JSON.stringify(message));
+
+        // If message keys is [fields], set up editors
+        if (message.fields) {
+            var editors = {};
+            // Set up one editor for each string in "fields"
+            message.fields.forEach(function (field) {
+                var div = document.createElement("div");
+                div.className = "editor";
+                div.id = field;
+                document.body.appendChild(div);
+
+                var editor = monaco.editor.create(document.getElementById(field), {
+                    value: field, // TODO populate
+                    language: "json",
+                    theme: "dark-theme",
+                });
+                editors[field] = editor;
+            });
+        }
     };
 });
