@@ -413,5 +413,6 @@ class EditMonacoPlugin(BeetsPlugin):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     plugin = EditMonacoPlugin()
     plugin.test_command(None, None, None)
