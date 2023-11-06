@@ -15,27 +15,37 @@ require(["vs/editor/editor.main"], function () {
         socket.send("Message from web interface!");
     };
     socket.onmessage = function (event) {
-        // All messages will be JSON
+        // Receives a list of dicts
+        // Dict keys are the same for each list element
+        // Create one column for each key
+        // The editor value should be a newline-separated list of values for that key
         var message = JSON.parse(event.data);
-        // alert(JSON.stringify(message));
+        var fields = Object.keys(message[0]);
+        // Create one editor column for each field
+        // TODO custom sort
+        fields.forEach(function (field_name) {
+            var field = document.createElement("div");
+            field.id = field_name;
+            document.body.appendChild(field);
 
-        // If message keys is [fields], set up editors
-        if (message.fields) {
-            var editors = {};
-            // Set up one editor for each string in "fields"
-            message.fields.forEach(function (field) {
-                var div = document.createElement("div");
-                div.className = "editor";
-                div.id = field;
-                document.body.appendChild(div);
-
-                var editor = monaco.editor.create(document.getElementById(field), {
-                    value: field, // TODO populate
-                    language: "json",
-                    theme: "dark-theme",
-                });
-                editors[field] = editor;
+            var editor = document.createElement("div");
+            field.className = "editor";
+            monaco.editor.create(field, {
+                language: "json",
+                theme: "dark-theme",
+                // automaticLayout: true,
+                // readOnly: true
             });
-        }
+        });
+        // Populate the editors line-by-line
+        Object.entries(fields).forEach(function ([field_name, field_data]) {
+            var editor = monaco.editor.getModels()[field_name];
+            var lines = [];
+            // Append this editor with field_data
+            message.forEach(function (row) {
+                lines.push(row[field_data]);
+            });
+            editor.setValue(lines.join("\n")); // TODO call once at the end instead
+        });
     };
 });

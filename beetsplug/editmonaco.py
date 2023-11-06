@@ -24,6 +24,7 @@ import webbrowser
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+import pandas as pd
 import websockets
 import yaml
 from beets import ui
@@ -195,14 +196,12 @@ class EditMonacoPlugin(BeetsPlugin):
                 return
 
     async def populate_websocket(self, websocket):
-        # Set up editors with fields first
-        await websocket.send(json.dumps({"fields": self.fields}))
-
         # Read data from temporary file
         with Path(self.tempfile.name).open() as f:
             data = f.read()
 
-        # await websocket.send(data)
+        print(f"data: {type(data)}, {data}")
+        await websocket.send(data)
 
         # # Loop until we have parseable data and the user confirms
         # try:
