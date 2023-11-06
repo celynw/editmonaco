@@ -292,7 +292,6 @@ class EditMonacoPlugin(BeetsPlugin):
         Dump a set of Model objects to a file as text, ask the user to edit it, and apply any changes to the objects.
         Return a boolean indicating whether the edit succeeded.
         """
-        self.fields = fields
         # Set up a temporary file with the initial data for editing
         self.tempfile = NamedTemporaryFile(
             mode="w",
@@ -300,10 +299,11 @@ class EditMonacoPlugin(BeetsPlugin):
             delete=False,
             encoding="utf-8",
         )
-        old_str = dump(old_data)
-        self.tempfile.write(old_str)
-        self.tempfile.close()
-
+        # Save data to temporary file
+        # First, turn Items into pandas dataframe
+        metadata = pd.DataFrame([flatten(obj, fields) for obj in objs])
+        metadata = metadata.set_index("id")
+        metadata.to_json(self.tempfile.name, orient="records", indent=2)
         # NEW: Start servers and send the metadata
         logging.info("Starting HTTP server")
         self.server_http_thread = threading.Thread(target=self.serve_http, daemon=True)
