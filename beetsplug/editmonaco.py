@@ -150,10 +150,7 @@ class EditMonacoPlugin(BeetsPlugin):
             return
 
         # Get the fields to edit
-        if opts.all:
-            fields = None
-        else:
-            fields = self._get_fields(opts.album, opts.field)
+        fields = self._get_fields(opts.album, opts.field) if not opts.all else []
         self.edit(opts.album, objs, fields)
 
     async def serve_websocket(self):
