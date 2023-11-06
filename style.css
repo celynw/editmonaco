@@ -5,8 +5,7 @@ html, body {
     overflow: hidden; /* Prevent scrollbars */
 }
 
-.editor {
-    width: 33.33%;
+.field {
     float: left;
     height: 100%;
     border: 0;
