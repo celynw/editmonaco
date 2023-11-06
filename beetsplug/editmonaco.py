@@ -11,10 +11,13 @@
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
 """Open metadata information in a web-based text editor to let the user edit it."""
+from __future__ import annotations
+
 import asyncio
 import codecs
 import http.server
 import logging
+import optparse
 import threading
 import webbrowser
 from pathlib import Path
@@ -25,6 +28,7 @@ import yaml
 from beets import ui
 from beets.dbcore import types
 from beets.importer import action
+from beets.library import Item
 from beets.plugins import BeetsPlugin
 from beets.ui import Subcommand
 from beets.ui.commands import PromptChoice, _do_query
@@ -150,7 +154,7 @@ class EditMonacoPlugin(BeetsPlugin):
             return
 
         # Get the fields to edit
-        fields = self._get_fields(opts.album, opts.field) if not opts.all else []
+        fields = self._get_fields(album=opts.album, extra=opts.field) if not opts.all else []
         self.edit(opts.album, objs, fields)
 
     async def serve_websocket(self):
@@ -252,13 +256,10 @@ class EditMonacoPlugin(BeetsPlugin):
         #                     obj.load()
         #             continue
 
-    def _get_fields(self, album, extra):
+    def _get_fields(self, *, album: bool, extra: list[optparse.Values]) -> list[str]:
         """Get the set of fields to edit."""
         # Start with the configured base fields
-        if album:
-            fields = self.config["albumfields"].as_str_seq()
-        else:
-            fields = self.config["itemfields"].as_str_seq()
+        fields = self.config["albumfields"].as_str_seq() if album else self.config["itemfields"].as_str_seq()
 
         # Add the requested extra fields
         if extra:
@@ -267,7 +268,7 @@ class EditMonacoPlugin(BeetsPlugin):
         # Ensure we always have the `id` field for identification
         fields.append("id")
 
-        return set(fields)
+        return list(set(fields))
 
     def edit(self, album, objs, fields):
         """
@@ -285,7 +286,7 @@ class EditMonacoPlugin(BeetsPlugin):
         if success:
             self.save_changes(objs)
 
-    def edit_objects(self, objs: list[dict], fields: list[str]) -> bool:
+    def edit_objects(self, objs: list[Item], fields: list[str]) -> bool:
         """
         Dump a set of Model objects to a file as text, ask the user to edit it, and apply any changes to the objects.
         Return a boolean indicating whether the edit succeeded.
