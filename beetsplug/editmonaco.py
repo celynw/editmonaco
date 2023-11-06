@@ -417,8 +417,8 @@ if __name__ == "__main__":
     plugin = EditMonacoPlugin()
     plugin.edit_objects(
         [
-            Item(id=1000, title="title1", artist="artist1", track=1),
-            Item(id=1001, title="title2", artist="artist2", track=2),
+            Item(id=1000, track=1, title="title1", artist="artist1", format="mp3"),
+            Item(id=1001, track=2, title="title2", artist="artist2", format="aac"),
         ],
-        ["id", "track", "title", "artist"],
+        ["id", "format", "track", "title", "artist", "format"],
     )

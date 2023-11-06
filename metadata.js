@@ -22,7 +22,7 @@ require(["vs/editor/editor.main"], function () {
         var message = JSON.parse(event.data);
         var fields = Object.keys(message[0]);
         // Create one editor column for each field
-        // TODO custom sort
+        // TODO custom sort, I believe the current sort is based on field order in beets.library.Item
         fields.forEach(function (field_name) {
             var field = document.createElement("div");
             field.id = field_name;
