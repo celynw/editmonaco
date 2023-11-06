@@ -28,6 +28,12 @@ require(["vs/editor/editor.main"], function () {
             field.id = field_name;
             document.body.appendChild(field);
 
+            var title = document.createElement("div");
+            field.className = "title";
+            field.appendChild(title)
+            // Add text to title with style ".title"
+            title.innerHTML = field_name;
+
             var editor = document.createElement("div");
             field.className = "editor";
             monaco.editor.create(field, {
