@@ -33,7 +33,7 @@ require(["vs/editor/editor.main"], function () {
                 document.body.appendChild(field);
 
                 var column_name = document.createElement("div");
-                column_name.className = "column_name";
+                column_name.className = "column_name no-select";
                 column_name.innerHTML = field_name;
                 field.appendChild(column_name)
 
