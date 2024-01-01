@@ -48,6 +48,7 @@ require(["vs/editor/editor.main"], function () {
                 );
                 field.appendChild(editor)
             });
+
             // Populate the editors line-by-line
             Object.entries(fields).forEach(function ([field_name, field_data]) {
                 var editor = monaco.editor.getModels()[field_name];
@@ -58,5 +59,22 @@ require(["vs/editor/editor.main"], function () {
                 });
                 editor.setValue(lines.join("\n")); // TODO call once at the end instead
             });
+
+            // Synchronise lines
+            socket.send(editors);
+            editors.forEach(function (editor, index) {
+                editor.onDidChangeCursorPosition(function (e) {
+                    var newLineNumber = e.position.lineNumber;
+                    socket.send("Line changed to " + newLineNumber);
+                    editors.forEach(function (otherEditor, otherIndex) {
+                        if (otherIndex !== index) {
+                            otherEditor.setPosition({ lineNumber: newLineNumber, column: 1 });
+                        }
+                    });
+                });
+            });
+        } catch (error) {
+            socket.send(error.message);
+        };
     };
 });
