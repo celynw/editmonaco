@@ -174,26 +174,33 @@ class EditMonacoPlugin(BeetsPlugin):
 
         def _server_thread() -> None:
             nonlocal server_ready
-            with http.server.HTTPServer(("", self.http_port), handler) as httpd:
+            with http.server.HTTPServer(("", self.http_port), handler) as self.http_server:
                 server_ready.set()
                 logging.info("Serving HTTP on port %s", self.http_port)
-                httpd.serve_forever()
+                self.http_server.serve_forever()
 
-        server_thread = threading.Thread(target=_server_thread)
-        server_thread.daemon = True
-        server_thread.start()
+        self.server_thread = threading.Thread(target=_server_thread)
+        self.server_thread.daemon = True
+        self.server_thread.start()
         server_ready.wait()
         webbrowser.open(f"http://localhost:{self.http_port}")
 
     async def handler(self, websocket) -> None:
-        while True:
-            message = await websocket.recv()
-            logging.debug(message)
-            if message == "Message from web interface!":
-                await self.populate_websocket(websocket)
-            elif message == "Success":
-                self.success = True
-                return
+        try:
+            while True:
+                message = await websocket.recv()
+                logging.debug(message)
+                if message == "Message from web interface!":
+                    await self.populate_websocket(websocket)
+                elif message == "Success":
+                    self.success = True
+                    return
+        except websockets.exceptions.ConnectionClosedOK:
+            logging.info("Websocket closed! Page probably closed.")
+            self.http_server.shutdown()
+            self.websocket_server.close()
+            self.success = False
+            return
 
     async def populate_websocket(self, websocket):
         # Read data from temporary file
