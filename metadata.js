@@ -73,6 +73,19 @@ require(["vs/editor/editor.main"], function () {
                     });
                 });
             });
+
+            // Synchronise scrolling
+            editors.forEach(function (editor, index) {
+                editor.onDidScrollChange(function (e) {
+                    var newScrollTop = e.scrollTop;
+                    socket.send("Scroll changed to " + newScrollTop);
+                    editors.forEach(function (otherEditor, otherIndex) {
+                        if (otherIndex !== index) {
+                            otherEditor.setScrollTop(newScrollTop);
+                        }
+                    });
+                });
+            });
         } catch (error) {
             socket.send(error.message);
         };
