@@ -82,7 +82,7 @@ def flatten(obj, fields):
 
     # Possibly filter field names
     if fields:
-        return {k: v for k, v in d.items() if k in fields}
+        return {k: d[k] for k in fields if k in d}
     else:
         return d
 
@@ -275,7 +275,7 @@ class EditMonacoPlugin(BeetsPlugin):
         # Ensure we always have the `id` field for identification
         fields.append("id")
 
-        return list(set(fields))
+        return list(dict.fromkeys(fields))
 
     def edit(self, album, objs, fields):
         """
