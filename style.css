@@ -53,6 +53,23 @@ html, body {
 	background-color: #347890;
 }
 
+.button {
+	position: absolute;
+	z-index: 9999;
+	right: 8px;
+	bottom: 31px;
+	overflow: hidden;
+	border-radius: 4px;
+	padding: 22px;
+	background: rgb(0, 43, 56);
+	color: rgba(147, 161, 161);
+	box-shadow: rgba(0, 0, 0, 0.36) 0px 0px 8px 2px;
+}
+.button:hover {
+	background-color: #347890;
+	cursor: pointer;
+}
+
 .no-select {
 	user-select: none;
 	-webkit-user-select: none; /* Safari */
