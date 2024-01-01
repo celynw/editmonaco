@@ -32,10 +32,10 @@ require(["vs/editor/editor.main"], function () {
                 field.style.width = 100 / fields.length + "%";
                 document.body.appendChild(field);
 
-                var title = document.createElement("div");
-                title.className = "title";
-                title.innerHTML = field_name;
-                field.appendChild(title)
+                var column_name = document.createElement("div");
+                column_name.className = "column_name";
+                column_name.innerHTML = field_name;
+                field.appendChild(column_name)
 
                 var editor = document.createElement("div");
                 editors.push(
