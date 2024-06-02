@@ -40,7 +40,7 @@ require(["vs/editor/editor.main"], function () {
                 var editor = document.createElement("div");
                 editors.push(
                     monaco.editor.create(field, {
-                        language: "json",
+                        language: "plaintext",
                         theme: "dark-theme",
                         // automaticLayout: true,
                         // readOnly: true
