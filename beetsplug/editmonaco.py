@@ -47,15 +47,6 @@ class ParseError(Exception):
 	"""The modified file is unreadable. The user should be offered a chance to fix the error."""
 
 
-def dump(arg):
-	"""Dump a sequence of dictionaries as YAML for editing."""
-	return yaml.safe_dump_all(
-		arg,
-		allow_unicode=True,
-		default_flow_style=False,
-	)
-
-
 def _safe_value(obj, key, value):
 	"""
 	Check whether the `value` is safe to represent in YAML and trust as returned from parsed YAML.
