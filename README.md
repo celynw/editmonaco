@@ -10,6 +10,12 @@ For example:
 beet editmonaco Coldplay
 ```
 
+> [!NOTE]
+> For now, it only works when this directory is the working directory
+
+> [!NOTE]
+> If running from WSL, set the environment variable to the path to your browser for it to open the page automatically!
+
 This will open the page in your web browser with the current values (it doesn't access the internet).
 Edit to your heart's content, and when you're done, press <kbd>Submit</kbd>
 
