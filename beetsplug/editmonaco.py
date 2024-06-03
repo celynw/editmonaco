@@ -12,10 +12,10 @@
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
 """Open metadata information in a web-based text editor to let the user edit it."""
+
 from __future__ import annotations
 
 import asyncio
-import codecs
 import http.server
 import logging
 import optparse
@@ -54,7 +54,8 @@ def dump(arg):
 
 
 def _safe_value(obj, key, value):
-	"""Check whether the `value` is safe to represent in YAML and trust as returned from parsed YAML.
+	"""
+	Check whether the `value` is safe to represent in YAML and trust as returned from parsed YAML.
 	This ensures that values do not change their type when the user edits their YAML representation.
 	"""
 	typ = obj._type(key)
@@ -62,7 +63,8 @@ def _safe_value(obj, key, value):
 
 
 def flatten(obj, fields):
-	"""Represent `obj`, a `dbcore.Model` object, as a dictionary for serialization.
+	"""
+	Represent `obj`, a `dbcore.Model` object, as a dictionary for serialization.
 	Only include the given `fields` if provided; otherwise, include everything.
 
 	The resulting dictionary's keys are strings and the values are safely YAML-serializable types.
@@ -81,12 +83,13 @@ def flatten(obj, fields):
 	# Possibly filter field names
 	if fields:
 		return {k: d[k] for k in fields if k in d}
-	else:
-		return d
+
+	return d
 
 
 def apply_(obj, data):
-	"""Set the fields of a `dbcore.Model` object according to a dictionary.
+	"""
+	Set the fields of a `dbcore.Model` object according to a dictionary.
 	This is the opposite of `flatten`.
 	The `data` dictionary should have strings as values.
 	"""
@@ -275,12 +278,12 @@ class EditMonacoPlugin(BeetsPlugin):
 		return list(dict.fromkeys(fields))
 
 	def edit(self, album, objs, fields):
-		"""The core editor function.
+		"""
+		The core editor function.
 
 		- `album`: A flag indicating whether we're editing Items or Albums.
 		- `objs`: The `Item`s or `Album`s to edit.
-		- `fields`: The set of field names to edit (or None to edit
-		  everything).
+		- `fields`: The set of field names to edit (or None to edit everything).
 		"""
 		# Present the YAML to the user and let them change it
 		success = self.edit_objects(objs, fields)
@@ -290,7 +293,8 @@ class EditMonacoPlugin(BeetsPlugin):
 			self.save_changes(objs)
 
 	def edit_objects(self, objs: list[Item], fields: list[str]) -> bool:
-		"""Dump a set of Model objects to a file as text, ask the user to edit it, and apply any changes to the objects.
+		"""
+		Dump a set of Model objects to a file as text, ask the user to edit it, and apply any changes to the objects.
 		Return a boolean indicating whether the edit succeeded.
 		"""
 		# Set up a temporary file with the initial data for editing
@@ -319,7 +323,8 @@ class EditMonacoPlugin(BeetsPlugin):
 		return self.success
 
 	def apply_data(self, objs, old_data, new_data):
-		"""Take potentially-updated data and apply it to a set of Model objects.
+		"""
+		Take potentially-updated data and apply it to a set of Model objects.
 		The objects are not written back to the database, so the changes are temporary.
 		"""
 		if len(old_data) != len(new_data):
@@ -390,13 +395,13 @@ class EditMonacoPlugin(BeetsPlugin):
 		if success:
 			# Return action.RETAG. The importer writes the tags to the files if needed without re-applying metadata
 			return action.RETAG
-		else:
-			# Edit cancelled / no edits made and revert changes
-			for obj in task.items:
-				obj.read()
+		# Edit cancelled / no edits made and revert changes
+		for obj in task.items:
+			obj.read()
 
 	def importer_edit_candidate(self, session, task):
-		"""Callback for invoking the functionality during an interactive import session on a *candidate*.
+		"""
+		Callback for invoking the functionality during an interactive import session on a *candidate*.
 		The candidate's metadata is applied to the original items.
 		"""
 		# Prompt the user for a candidate
