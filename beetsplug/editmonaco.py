@@ -18,11 +18,11 @@ from __future__ import annotations
 import asyncio
 import http.server
 import logging
-import optparse
 import threading
 import webbrowser
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import TYPE_CHECKING
 
 import pandas as pd
 import websockets
@@ -34,6 +34,9 @@ from beets.library import Item
 from beets.plugins import BeetsPlugin
 from beets.ui import Subcommand
 from beets.ui.commands import PromptChoice, _do_query
+
+if TYPE_CHECKING:
+	import optparse
 
 # These "safe" types can avoid the format/parse cycle that most fields go through;
 # They are safe to edit with native YAML types
