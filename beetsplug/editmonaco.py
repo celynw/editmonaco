@@ -293,9 +293,8 @@ class EditMonacoPlugin(BeetsPlugin):
 		)
 		# Save data to temporary file
 		# First, turn Items into pandas dataframe
-		metadata = pd.DataFrame([flatten(obj, fields) for obj in objs])
-		metadata = metadata.set_index("id")
-		metadata.to_json(self.tempfile.name, orient="records", indent=2)
+		self.old_data = pd.DataFrame([flatten(obj, fields) for obj in objs])
+		self.old_data.to_json(path_or_buf=self.tempfile.name, orient="records")
 		# NEW: Start servers and send the metadata
 		logging.info("Starting HTTP server")
 		self.server_http_thread = threading.Thread(target=self.serve_http, daemon=True)
