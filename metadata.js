@@ -11,6 +11,14 @@ require(["vs/editor/editor.main"], function () {
 		colors: {}
 	});
 
+	function json_to_editors(editors, message) {
+		fields.forEach(function (field_name, index) {
+			var editor = editors[index];
+			var lines = message.map(row => row[field_name]);
+			editor.setValue(lines.join("\n"));
+		});
+	}
+
 	var socket = new WebSocket("ws://localhost:8889");
 	socket.onopen = function () {
 		socket.send("Socket connected");
@@ -54,15 +62,7 @@ require(["vs/editor/editor.main"], function () {
 			});
 
 			// Populate the editors line-by-line
-			Object.entries(fields).forEach(function ([field_name, field_data]) {
-				var editor = monaco.editor.getModels()[field_name];
-				var lines = [];
-				// Append this editor with field_data
-				message.forEach(function (row) {
-					lines.push(row[field_data]);
-				});
-				editor.setValue(lines.join("\n")); // TODO call once at the end instead
-			});
+			json_to_editors(editors, message);
 
 			// Synchronise lines
 			editors.forEach(function (editor, index) {
