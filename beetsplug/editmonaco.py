@@ -184,7 +184,7 @@ class EditMonacoPlugin(BeetsPlugin):
 			while True:
 				message = await websocket.recv()
 				logging.debug(message)
-				if message == "Message from web interface!":
+				if message == "Socket connected":
 					await self.populate_websocket(websocket)
 				elif message == "Success":
 					self.success = True

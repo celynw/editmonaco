@@ -11,8 +11,7 @@ require(["vs/editor/editor.main"], function () {
 
 	var socket = new WebSocket("ws://localhost:8889");
 	socket.onopen = function () {
-		// alert("Socket connected!");
-		socket.send("Message from web interface!");
+		socket.send("Socket connected");
 	};
 	socket.onmessage = function (event) {
 		try {
