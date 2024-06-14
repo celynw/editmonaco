@@ -1,16 +1,40 @@
+[project]
+requires-python = ">=3.10"
+
 [tool.ruff]
 line-length = 120
-target-version = "py310"
 
 [tool.ruff.lint]
+preview = true
 select = ["ALL"]
-ignore = ["D206", "D212", "W191", "ANN101"]
+ignore = [
+	"ANN003", # Missing type annotation for `**kwargs`
+	"ANN101", # Missing type annotation for self in method
+	"D203",   # 1 blank line required before class docstring
+	"D206",   # Docstring should be indented with spaces, not tabs
+	"D212",   # Multi-line docstring summary should start at the first line
+	"D413",   # Missing blank line after last section
+	"E203",   # Whitespace before ':' (Conflicts with black `list[1 : 1 + 1])`)
+	"ERA001", # Found commented-out code
+	"TD003",  # Missing issue link on the line following this TODO
+	"W191",   # Indentation contains tabs
+]
+unfixable = [
+	"B007", # Do not use mutable data structures for argument defaults
+	"B905", # `zip()` without an explicit `strict=` parameter
+	"D204", # 1 blank line required after class docstring
+	"F401", # Imported but unused
+	"F841", # Local variable is assigned to but never used
+]
 
-fixable = ["ALL"]
-unfixable = []
+[tool.ruff.lint.isort]
+split-on-trailing-comma = true
+
+[tool.ruff.lint.flake8-annotations]
+mypy-init-return = true
 
 [tool.ruff.format]
-quote-style = "double"
+skip-magic-trailing-comma = false
 indent-style = "tab"
 line-ending = "lf"
 docstring-code-format = true
