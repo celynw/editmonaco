@@ -28,7 +28,10 @@ require(["vs/editor/editor.main"], function () {
 				var field = document.createElement("div");
 				field.id = field_name;
 				field.className = "field";
-				field.style.width = 100 / fields.length + "%";
+				field.style.width = 100 / (fields.length - 1) + "%";
+				if (field_name === "id") {
+					field.style.display = "none";
+				}
 				document.body.appendChild(field);
 
 				var column_name = document.createElement("div");
@@ -42,7 +45,7 @@ require(["vs/editor/editor.main"], function () {
 						language: "plaintext",
 						theme: "dark-theme",
 						// automaticLayout: true,
-						// readOnly: true
+						readOnly: field_name === "id",
 					})
 				);
 				field.appendChild(editor)
