@@ -1,3 +1,5 @@
+var fields = []; // Dynamically set based on the data received from beets
+
 require.config({ paths: { vs: "node_modules/monaco-editor/min/vs" } });
 require(["vs/editor/editor.main"], function () {
 	monaco.editor.defineTheme("dark-theme", {
@@ -20,7 +22,7 @@ require(["vs/editor/editor.main"], function () {
 			// Create one column for each key
 			// The editor value should be a newline-separated list of values for that key
 			var message = JSON.parse(event.data);
-			var fields = Object.keys(message[0]);
+			fields = Object.keys(message[0]);
 			var editors = []; // To be populated in onmessage
 			// Create one editor column for each field
 			// TODO custom sort, I believe the current sort is based on field order in beets.library.Item
