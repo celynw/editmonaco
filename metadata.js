@@ -63,11 +63,9 @@ require(["vs/editor/editor.main"], function () {
 			});
 
 			// Synchronise lines
-			socket.send(editors);
 			editors.forEach(function (editor, index) {
 				editor.onDidChangeCursorPosition(function (e) {
 					var newLineNumber = e.position.lineNumber;
-					socket.send("Line changed to " + newLineNumber);
 					editors.forEach(function (otherEditor, otherIndex) {
 						if (otherIndex !== index) {
 							otherEditor.setPosition({ lineNumber: newLineNumber, column: 1 });
@@ -80,7 +78,6 @@ require(["vs/editor/editor.main"], function () {
 			editors.forEach(function (editor, index) {
 				editor.onDidScrollChange(function (e) {
 					var newScrollTop = e.scrollTop;
-					socket.send("Scroll changed to " + newScrollTop);
 					editors.forEach(function (otherEditor, otherIndex) {
 						if (otherIndex !== index) {
 							otherEditor.setScrollTop(newScrollTop);
