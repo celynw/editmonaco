@@ -33,16 +33,12 @@ if TYPE_CHECKING:
 	from beets.ui.commands import TerminalImportSession
 
 # These "safe" types can avoid the format/parse cycle that most fields go through;
-# They are safe to edit with native YAML types
+# They are safe to edit with native JSON types
 SAFE_TYPES = (types.BaseFloat, types.BaseInteger, types.Boolean)
 
 
 def _safe_value(obj: Item | Album, key: str, value: Any) -> bool:  # noqa: ANN401
-	"""
-	Check whether the `value` is safe to represent in YAML and trust as returned from parsed YAML.
-
-	Ensures that values do not change their type when the user edits their YAML representation.
-	"""
+	"""Check if `value` is safe to represent in JSON, and if it returns to the same type from edited JSON."""
 	typ = obj._type(key)  # noqa: SLF001
 
 	return isinstance(typ, SAFE_TYPES) and isinstance(value, typ.model_type)
@@ -53,14 +49,14 @@ def flatten(obj: Item | Album, fields: list[str]) -> dict[str, Any]:
 	Represent `obj`, a `dbcore.Model` object, as a dictionary for serialization.
 
 	Only include the given `fields` if provided; otherwise, include everything.
-	The resulting dictionary's keys are strings and the values are safely YAML-serializable types.
+	The resulting dictionary's keys are strings and the values are safely JSON-serializable types.
 	"""
 	# Format each value
 	d = {}
 	for key in obj:
 		value = obj[key]
 		if _safe_value(obj, key, value):
-			# A safe value that is faithfully representable in YAML
+			# A safe value that is faithfully representable in JSON
 			d[key] = value
 		else:
 			# A value that should be edited as a string
@@ -422,7 +418,7 @@ class EditMonacoPlugin(BeetsPlugin):
 			if not obj._db or obj.id is None:  # noqa: SLF001
 				obj.id = -i
 
-		# Present the YAML to the user and let them change it
+		# Present the JSON to the user and let them change it
 		fields = self._get_fields(album=False, extra=[])
 		success = self.edit_objects(task.items, fields)
 
