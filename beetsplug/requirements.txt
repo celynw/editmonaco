@@ -1,3 +1,4 @@
 beets
 pandas
+rich
 websockets

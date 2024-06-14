@@ -282,9 +282,14 @@ class EditMonacoPlugin(BeetsPlugin):
 		# Present the YAML to the user and let them change it
 		success = self.edit_objects(objs, fields)
 
+		if any(obj._db is None for obj in objs):  # In case of __main__, we have no database
+			return objs
+
 		# Save the new data
 		if success:
 			self.save_changes(objs)
+
+		return objs
 
 	def edit_objects(self, objs: list[Item], fields: list[str]) -> bool:
 		"""
@@ -408,12 +413,20 @@ class EditMonacoPlugin(BeetsPlugin):
 
 
 if __name__ == "__main__":
+	from rich import print
+
 	logging.basicConfig(level=logging.DEBUG)
 	plugin = EditMonacoPlugin()
-	plugin.edit_objects(
-		[
-			Item(id=1000, track=1, title="title1", artist="artist1", format="mp3"),
-			Item(id=1001, track=2, title="title2", artist="artist2", format="aac"),
-		],
-		["id", "format", "track", "title", "artist", "format"],
-	)
+	data = [
+		Item(id=1000, track=1, title="title1", artist="artist1", format="mp3"),
+		Item(id=1001, track=2, title="title2", artist="artist2", format="aac"),
+	]
+	fields = ["id", "format", "track", "title", "artist", "format"]
+	data_original = pd.DataFrame([flatten(obj, fields) for obj in data])
+
+	plugin.edit(_album=False, objs=data, fields=fields)
+	data_modified = pd.DataFrame([flatten(obj, fields) for obj in data])
+
+	print("Original:\n", data_original)
+	print("Modified:\n", data_modified)
+	print("Differences:\n", data_original.compare(data_modified))
