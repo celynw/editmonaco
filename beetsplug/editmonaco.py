@@ -187,6 +187,18 @@ class EditMonacoPlugin(BeetsPlugin):
 				else:
 					self.success = True
 					self.new_data = pd.DataFrame(data)
+
+					# TODO Enforce types, we should know them?
+					# TODO Get editors to match syntax/restrictions, then parse with that knowledge?
+					for column in self.old_data.columns:
+						try:
+							self.new_data[column] = self.new_data[column].astype(self.old_data[column].dtype)
+						except ValueError:
+							# Handle the case where conversion is not possible
+							# This could be due to invalid data formats, etc.
+							# You might want to log this or handle it as per your requirements
+							print(f"Warning: Could not convert column {column} to {self.old_data[column].dtype}")
+
 					print("Returning data processed")
 					break
 		except websockets.exceptions.ConnectionClosedOK:
