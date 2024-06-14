@@ -109,7 +109,7 @@ class EditMonacoPlugin(BeetsPlugin):
 				"albumfields": "album albumartist",
 				"itemfields": "track title artist album",
 				# Silently ignore any changes to these fields
-				"ignore_fields": "id path",
+				"ignore_fields": "path",
 			},
 		)
 		self.register_listener(
@@ -284,11 +284,11 @@ class EditMonacoPlugin(BeetsPlugin):
 		#             continue
 
 	def _get_fields(self, *, album: bool, extra: list[optparse.Values]) -> list[str]:
-		"""Get the set of fields to edit."""
+		"""Get the set of fields to edit. Uses a dictionary rather than a set to preserve order."""
 		# Start with the configured base fields
 		fields = self.config["albumfields"].as_str_seq() if album else self.config["itemfields"].as_str_seq()
 
-		# Add the requested extra fields
+		# Add any requested extra fields
 		if extra:
 			fields += extra
 
