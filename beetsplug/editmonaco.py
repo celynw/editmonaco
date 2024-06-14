@@ -13,6 +13,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
+import aiofiles
 import pandas as pd
 import websockets
 import yaml
@@ -209,10 +210,9 @@ class EditMonacoPlugin(BeetsPlugin):
 
 	async def populate_websocket(self, websocket):
 		# Read data from temporary file
-		with Path(self.tempfile.name).open() as f:
-			data = f.read()
+		async with aiofiles.open(self.tempfile.name) as f:
+			data = await f.read()
 
-		print(f"data: {type(data)}, {data}")
 		await websocket.send(data)
 
 		# # Loop until we have parseable data and the user confirms
@@ -342,11 +342,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		The objects are not written back to the database, so the changes are temporary.
 		"""
 		if len(self.old_data) != len(self.new_data):
-			self._log.warning(
-				"number of objects changed from {} to {}",
-				len(self.old_data),
-				len(self.new_data),
-			)
+			logging.warning("Number of objects changed from %d to %d", len(self.old_data), len(self.new_data))
 
 		obj_by_id = {o.id: o for o in objs}
 		ignore_fields = self.config["ignore_fields"].as_str_seq()
@@ -356,7 +352,7 @@ class EditMonacoPlugin(BeetsPlugin):
 			forbidden = False
 			for key in ignore_fields:
 				if old_dict.get(key) != new_dict.get(key):
-					self._log.warning("ignoring object whose {} changed", key)
+					logging.warning("Ignoring object whose %s changed", key)
 					forbidden = True
 					break
 			if forbidden:
@@ -370,7 +366,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		# Save to the database and possibly write tags
 		for ob in objs:
 			if ob._dirty:
-				self._log.debug("saving changes to {}", ob)
+				logging.debug("Saving changes to %s", ob)
 				ob.try_sync(ui.should_write(), ui.should_move())
 
 	# Methods for interactive importer execution
