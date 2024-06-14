@@ -22,6 +22,10 @@ Edit to your heart's content, and when you're done, press <kbd>Submit</kbd>
 
 ## Development
 
+### Standalone
+
+Run `beetsplug/editmonaco.py` directly, it will start with some dummy data.
+
 ### beets
 
 Add the path to this repository to your beets config (typically `~/.config/beets/config.yaml`). For instance:
