@@ -19,6 +19,25 @@ require(["vs/editor/editor.main"], function () {
 		});
 	}
 
+	function editors_to_json(editors) {
+		var editorsData = editors.map(editor => editor.getValue());
+		console.log(editorsData);
+
+		// Assume all editors have the same number of lines
+		let lineCount = editorsData[0].split("\n").length;
+		let jsonData = [];
+		for (let i = 0; i < lineCount; i++) {
+			let row = {};
+			editorsData.forEach((editorContent, index) => {
+				let lines = editorContent.split("\n");
+				row[fields[index]] = lines[i] || ""; // Use an empty string if the line does not exist
+			});
+			jsonData.push(row);
+		}
+
+		return JSON.stringify(jsonData, null);
+	}
+
 	var socket = new WebSocket("ws://localhost:8889");
 	socket.onopen = function () {
 		socket.send("Socket connected");
@@ -90,5 +109,9 @@ require(["vs/editor/editor.main"], function () {
 		} catch (error) {
 			socket.send(error.message);
 		};
+
+		document.querySelector(".button.submit").addEventListener("click", function () {
+			socket.send(editors_to_json(editors));
+		});
 	};
 });

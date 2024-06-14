@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import http.server
+import json
 import logging
 import threading
 import webbrowser
@@ -94,6 +95,7 @@ class EditMonacoPlugin(BeetsPlugin):
 
 	def __init__(self):
 		super().__init__()
+		self.success = False
 		self.config.add(
 			{
 				# The default fields to edit
@@ -172,17 +174,26 @@ class EditMonacoPlugin(BeetsPlugin):
 			while True:
 				message = await websocket.recv()
 				logging.debug(message)
-				if message == "Socket connected":
-					await self.populate_websocket(websocket)
-				elif message == "Success":
+				try:
+					# Normal operation, this is what is returned when editing is done
+					data = json.loads(message)
+				except json.JSONDecodeError:
+					# Other messages
+					if message == "Socket connected":
+						await self.populate_websocket(websocket)
+				except Exception as e:
+					print(f"Message: {message}")  # All error messages
+					print(e)
+				else:
 					self.success = True
-					return
+					self.new_data = pd.DataFrame(data)
+					print("Returning data processed")
+					break
 		except websockets.exceptions.ConnectionClosedOK:
 			logging.info("Websocket closed! Page probably closed.")
+		finally:
 			self.http_server.shutdown()
 			self.websocket_server.close()
-			self.success = False
-			return
 
 	async def populate_websocket(self, websocket):
 		# Read data from temporary file
@@ -303,26 +314,32 @@ class EditMonacoPlugin(BeetsPlugin):
 		logging.info("Starting websocket server")
 		asyncio.run(self.serve_websocket())
 
-		# Remove the temporary file before returning
-		Path(self.tempfile.name).unlink()
+		if self.success:
+			if self.old_data.equals(self.new_data):
+				ui.print_("No changes to apply")
+				return False
+			self.apply_data(objs)
+
+		Path(self.tempfile.name).unlink()  # Remove the temporary file
 
 		return self.success
 
-	def apply_data(self, objs, old_data, new_data):
+	def apply_data(self, objs: list[Item] | list[Album]) -> None:
 		"""
 		Take potentially-updated data and apply it to a set of Model objects.
 		The objects are not written back to the database, so the changes are temporary.
 		"""
-		if len(old_data) != len(new_data):
+		if len(self.old_data) != len(self.new_data):
 			self._log.warning(
 				"number of objects changed from {} to {}",
-				len(old_data),
-				len(new_data),
+				len(self.old_data),
+				len(self.new_data),
 			)
 
 		obj_by_id = {o.id: o for o in objs}
 		ignore_fields = self.config["ignore_fields"].as_str_seq()
-		for old_dict, new_dict in zip(old_data, new_data, strict=False):
+		# TODO overhaul this
+		for old_dict, new_dict in zip(self.old_data.to_dict("records"), self.new_data.to_dict("records")):
 			# Prohibit any changes to forbidden fields to avoid clobbering `id` and such by mistake
 			forbidden = False
 			for key in ignore_fields:
