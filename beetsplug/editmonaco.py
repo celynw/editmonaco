@@ -16,46 +16,48 @@ from typing import TYPE_CHECKING
 import aiofiles
 import pandas as pd
 import websockets
-import yaml
 from beets import ui
 from beets.dbcore import types
 from beets.importer import action
-from beets.library import Item
+from beets.library import Item, Library
 from beets.plugins import BeetsPlugin
 from beets.ui import Subcommand
 from beets.ui.commands import PromptChoice, _do_query
 
 if TYPE_CHECKING:
 	import optparse
+	from typing import Any
+
+	from beets.importer import ImportTask
+	from beets.library import Album
+	from beets.ui.commands import TerminalImportSession
 
 # These "safe" types can avoid the format/parse cycle that most fields go through;
 # They are safe to edit with native YAML types
 SAFE_TYPES = (types.BaseFloat, types.BaseInteger, types.Boolean)
 
 
-class ParseError(Exception):
-	"""The modified file is unreadable. The user should be offered a chance to fix the error."""
-
-
-def _safe_value(obj, key, value):
+def _safe_value(obj: Item | Album, key: str, value: Any) -> bool:  # noqa: ANN401
 	"""
 	Check whether the `value` is safe to represent in YAML and trust as returned from parsed YAML.
-	This ensures that values do not change their type when the user edits their YAML representation.
+
+	Ensures that values do not change their type when the user edits their YAML representation.
 	"""
-	typ = obj._type(key)
+	typ = obj._type(key)  # noqa: SLF001
+
 	return isinstance(typ, SAFE_TYPES) and isinstance(value, typ.model_type)
 
 
-def flatten(obj, fields):
+def flatten(obj: Item | Album, fields: list[str]) -> dict[str, Any]:
 	"""
 	Represent `obj`, a `dbcore.Model` object, as a dictionary for serialization.
-	Only include the given `fields` if provided; otherwise, include everything.
 
+	Only include the given `fields` if provided; otherwise, include everything.
 	The resulting dictionary's keys are strings and the values are safely YAML-serializable types.
 	"""
 	# Format each value
 	d = {}
-	for key in obj.keys():
+	for key in obj:
 		value = obj[key]
 		if _safe_value(obj, key, value):
 			# A safe value that is faithfully representable in YAML
@@ -71,9 +73,10 @@ def flatten(obj, fields):
 	return d
 
 
-def apply_(obj, data):
+def apply_(obj: Item | Album, data: dict[str, Any]) -> None:
 	"""
 	Set the fields of a `dbcore.Model` object according to a dictionary.
+
 	This is the opposite of `flatten`.
 	The `data` dictionary should have strings as values.
 	"""
@@ -88,13 +91,16 @@ def apply_(obj, data):
 
 
 class EditMonacoPlugin(BeetsPlugin):
+	"""Open metadata information in a web-based text editor to let the user edit it."""
+
 	http_port: int = 8888
 	websocket_port: int = 8889
-	http_server = None
+	http_server: http.server.HTTPServer
 	tempfile: Path
-	fields: list[str] = []
+	fields: list[str]
+	success: bool
 
-	def __init__(self):
+	def __init__(self) -> None:
 		super().__init__()
 		self.success = False
 		self.config.add(
@@ -111,7 +117,7 @@ class EditMonacoPlugin(BeetsPlugin):
 			self.before_choose_candidate_listener,
 		)
 
-	def commands(self):
+	def commands(self) -> list[Subcommand]:
 		command = Subcommand("editmonaco", help="Edit medatata in monaco editors")
 		command.func = self._edit_command
 		command.parser.add_option(
@@ -128,13 +134,14 @@ class EditMonacoPlugin(BeetsPlugin):
 			help="edit all fields",
 		)
 		command.parser.add_album_option()
+
 		return [command]
 
-	def _edit_command(self, lib, opts, args):
-		"""The CLI command function for the `beet editmonaco` command."""
+	def _edit_command(self, lib: Library, opts: optparse.Values, args: list[str]) -> None:
+		"""Edit metadata, as main function from the `beet editmonaco` CLI command."""
 		# Get the objects to edit
 		query = ui.decargs(args)
-		items, albums = _do_query(lib, query, opts.album, False)
+		items, albums = _do_query(lib, query, opts.album, also_items=False)
 		objs = albums if opts.album else items
 		if not objs:
 			ui.print_("Nothing to edit.")
@@ -144,7 +151,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		fields = self._get_fields(album=opts.album, extra=opts.field) if not opts.all else []
 		self.edit(opts.album, objs, fields)
 
-	async def serve_websocket(self):
+	async def serve_websocket(self) -> None:
 		self.websocket_server = await websockets.serve(
 			self.handler,
 			"",
@@ -153,7 +160,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		logging.info("Serving websocket on port %s", self.websocket_port)
 		await self.websocket_server.wait_closed()
 
-	def serve_http(self):
+	def serve_http(self) -> None:
 		handler = http.server.SimpleHTTPRequestHandler
 		server_ready = threading.Event()
 
@@ -170,7 +177,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		server_ready.wait()
 		webbrowser.open(f"http://localhost:{self.http_port}")
 
-	async def handler(self, websocket) -> None:
+	async def handler(self, websocket: websockets.server.WebSocketServerProtocol) -> None:
 		try:
 			while True:
 				message = await websocket.recv()
@@ -208,7 +215,15 @@ class EditMonacoPlugin(BeetsPlugin):
 			self.http_server.shutdown()
 			self.websocket_server.close()
 
-	async def populate_websocket(self, websocket):
+	async def populate_websocket(self, websocket: websockets.server.WebSocketServerProtocol) -> None:
+		"""
+		Populate the websocket with the data from the temporary file.
+
+		Parameters
+		----------
+		websocket
+			The websocket to populate
+		"""
 		# Read data from temporary file
 		async with aiofiles.open(self.tempfile.name) as f:
 			data = await f.read()
@@ -282,15 +297,19 @@ class EditMonacoPlugin(BeetsPlugin):
 
 		return list(dict.fromkeys(fields))
 
-	def edit(self, album, objs, fields):
+	def edit(self, _album: bool | None, objs: list[Item] | list[Album], fields: list[str]) -> list[Item] | list[Album]:
 		"""
-		The core editor function.
+		Edit the metadata, as the core editor function.
 
-		- `album`: A flag indicating whether we're editing Items or Albums.
-		- `objs`: The `Item`s or `Album`s to edit.
-		- `fields`: The set of field names to edit (or None to edit everything).
+		Parameters
+		----------
+		_album
+			A flag indicating whether we're editing Items or Albums
+		objs
+			The items/albums to edit
+		fields
+			The set of field names to edit (or None to edit everything)
 		"""
-		# Present the YAML to the user and let them change it
 		success = self.edit_objects(objs, fields)
 
 		if any(obj._db is None for obj in objs):  # In case of __main__, we have no database
@@ -302,10 +321,20 @@ class EditMonacoPlugin(BeetsPlugin):
 
 		return objs
 
-	def edit_objects(self, objs: list[Item], fields: list[str]) -> bool:
+	def edit_objects(self, objs: list[Item] | list[Album], fields: list[str]) -> bool:
 		"""
-		Dump a set of Model objects to a file as text, ask the user to edit it, and apply any changes to the objects.
-		Return a boolean indicating whether the edit succeeded.
+		Dump a set of items/albums to a file as text, ask the user to edit it, and apply any changes to the objects.
+
+		Parameters
+		----------
+		objs
+			The items/albums to edit
+		fields
+			The set of field names to edit (or None to edit everything)
+
+		Returns
+		-------
+			Whether the edit succeeded
 		"""
 		# Set up a temporary file with the initial data for editing
 		self.tempfile = NamedTemporaryFile(
@@ -319,11 +348,11 @@ class EditMonacoPlugin(BeetsPlugin):
 		self.old_data = pd.DataFrame([flatten(obj, fields) for obj in objs])
 		self.old_data.to_json(path_or_buf=self.tempfile.name, orient="records")
 		# NEW: Start servers and send the metadata
-		logging.info("Starting HTTP server")
+		self._log.info("Starting HTTP server")
 		self.server_http_thread = threading.Thread(target=self.serve_http, daemon=True)
 		self.server_http_thread.start()
 
-		logging.info("Starting websocket server")
+		self._log.info("Starting websocket server")
 		asyncio.run(self.serve_websocket())
 
 		if self.success:
@@ -339,10 +368,11 @@ class EditMonacoPlugin(BeetsPlugin):
 	def apply_data(self, objs: list[Item] | list[Album]) -> None:
 		"""
 		Take potentially-updated data and apply it to a set of Model objects.
+
 		The objects are not written back to the database, so the changes are temporary.
 		"""
 		if len(self.old_data) != len(self.new_data):
-			logging.warning("Number of objects changed from %d to %d", len(self.old_data), len(self.new_data))
+			self._log.warning("Number of objects changed from %d to %d", len(self.old_data), len(self.new_data))
 
 		obj_by_id = {o.id: o for o in objs}
 		ignore_fields = self.config["ignore_fields"].as_str_seq()
@@ -352,7 +382,7 @@ class EditMonacoPlugin(BeetsPlugin):
 			forbidden = False
 			for key in ignore_fields:
 				if old_dict.get(key) != new_dict.get(key):
-					logging.warning("Ignoring object whose %s changed", key)
+					self._log.warning("Ignoring object whose %s changed", key)
 					forbidden = True
 					break
 			if forbidden:
@@ -361,36 +391,35 @@ class EditMonacoPlugin(BeetsPlugin):
 			id_ = int(old_dict["id"])
 			apply_(obj_by_id[id_], new_dict)
 
-	def save_changes(self, objs):
+	def save_changes(self, objs: list[Item] | list[Album]) -> None:
 		"""Save a list of updated Model objects to the database."""
 		# Save to the database and possibly write tags
 		for ob in objs:
-			if ob._dirty:
+			if ob._dirty:  # noqa: SLF001
 				logging.debug("Saving changes to %s", ob)
 				ob.try_sync(ui.should_write(), ui.should_move())
 
-	# Methods for interactive importer execution
-	def before_choose_candidate_listener(self, session, task):
-		"""Append an "Edit" choice and an "edit Candidates" choice (if there are candidates) to the interactive importer prompt."""
-		choices = [PromptChoice("d", "eDit", self.importer_edit)]
+	def before_choose_candidate_listener(self, _session: TerminalImportSession, task: ImportTask) -> list[PromptChoice]:
+		"""Append "Edit" and "edit Candidates" (if applicable) choices to the interactive importer prompt."""
+		choices = [PromptChoice("d", "eDit", self.importer_edit_callback)]
 		if task.candidates:
 			choices.append(
 				PromptChoice(
 					"c",
 					"edit Candidates",
-					self.importer_edit_candidate,
+					self.importer_edit_candidate_callback,
 				),
 			)
 
 		return choices
 
-	def importer_edit(self, session, task):
-		"""Callback for invoking the functionality during an interactive import session on the *original* item tags."""
+	def importer_edit_callback(self, _session: TerminalImportSession, task: ImportTask) -> action | None:
+		"""Invoke the functionality during an interactive import session on the *original* item tags."""
 		# Assign negative temporary ids to Items that are not in the database yet
 		# By using negative values, no clash with items in the database can occur
 		for i, obj in enumerate(task.items, start=1):
 			# The importer may set the id to None when re-importing albums
-			if not obj._db or obj.id is None:
+			if not obj._db or obj.id is None:  # noqa: SLF001
 				obj.id = -i
 
 		# Present the YAML to the user and let them change it
@@ -404,15 +433,18 @@ class EditMonacoPlugin(BeetsPlugin):
 
 		# Save the new data
 		if success:
-			# Return action.RETAG. The importer writes the tags to the files if needed without re-applying metadata
+			# The importer writes the tags to the files if needed without re-applying metadata
 			return action.RETAG
 		# Edit cancelled / no edits made and revert changes
 		for obj in task.items:
 			obj.read()
 
-	def importer_edit_candidate(self, session, task):
+		return None
+
+	def importer_edit_candidate_callback(self, session: TerminalImportSession, task: ImportTask) -> action | None:
 		"""
-		Callback for invoking the functionality during an interactive import session on a *candidate*.
+		Invoke the functionality during an interactive import session on a *candidate*.
+
 		The candidate's metadata is applied to the original items.
 		"""
 		# Prompt the user for a candidate
@@ -421,13 +453,13 @@ class EditMonacoPlugin(BeetsPlugin):
 		task.match = task.candidates[sel - 1]
 		task.apply_metadata()
 
-		return self.importer_edit(session, task)
+		return self.importer_edit_callback(session, task)
 
 
 if __name__ == "__main__":
 	from rich import print
 
-	logging.basicConfig(level=logging.DEBUG)
+	logging.basicConfig(level=logging.DEBUG)  # Is 'warning' by default
 	plugin = EditMonacoPlugin()
 	data = [
 		Item(id=1000, track=1, title="title1", artist="artist1", format="mp3"),
