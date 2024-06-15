@@ -44,41 +44,55 @@ def _safe_value(obj: Item | Album, key: str, value: Any) -> bool:  # noqa: ANN40
 	return isinstance(typ, SAFE_TYPES) and isinstance(value, typ.model_type)
 
 
-def flatten(obj: Item | Album, fields: list[str]) -> dict[str, Any]:
+def obj_to_dict(obj: Item | Album, fields: list[str]) -> dict[str, Any]:
 	"""
-	Represent `obj`, a `dbcore.Model` object, as a dictionary for serialization.
+	Represent `obj` as a dictionary for safe JSON serialisation.
 
-	Only include the given `fields` if provided; otherwise, include everything.
-	The resulting dictionary's keys are strings and the values are safely JSON-serializable types.
+	Unsafe fields will be converted to strings.
+	This is the inverse of `dict_to_obj`.
+
+	Parameters
+	----------
+	obj
+		Object from the database to be represented
+	fields
+		Fields to include in the dictionary. If None, include all fields
+
+	Returns
+	-------
+		A dictionary with the object's fields formatted for JSON serialisation
 	"""
-	# Format each value
 	d = {}
 	for key in obj:
 		value = obj[key]
 		if _safe_value(obj, key, value):
-			# A safe value that is faithfully representable in JSON
 			d[key] = value
 		else:
-			# A value that should be edited as a string
 			d[key] = obj.formatted()[key]
 
-	# Possibly filter field names
+	# Filter field names if requested
 	if fields:
 		return {k: d[k] for k in fields if k in d}
 
 	return d
 
 
-def apply_(obj: Item | Album, data: dict[str, Any]) -> None:
+def dict_to_obj(obj: Item | Album, data: dict[str, str]) -> None:
 	"""
-	Set the fields of a `dbcore.Model` object according to a dictionary.
+	Parse a dictionary of data and assign it to an object.
 
-	This is the opposite of `flatten`.
-	The `data` dictionary should have strings as values.
+	This is the inverse of `obj_to_dict`.
+
+	Parameters
+	----------
+	obj
+		Object from the database to assign the data to
+	data
+		The dictionary of data to assign
 	"""
 	for key, value in data.items():
 		if _safe_value(obj, key, value):
-			# A safe value *stayed* represented as a safe type, so assign it directly
+			# A safe value stayed represented as a safe type, so assign it directly
 			obj[key] = value
 		else:
 			# Either the field was stringified originally, or the user changed it from a safe type to an unsafe one
@@ -341,7 +355,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		)
 		# Save data to temporary file
 		# First, turn Items into pandas dataframe
-		self.old_data = pd.DataFrame([flatten(obj, fields) for obj in objs])
+		self.old_data = pd.DataFrame([obj_to_dict(obj, fields) for obj in objs])
 		self.old_data.to_json(path_or_buf=self.tempfile.name, orient="records")
 		# NEW: Start servers and send the metadata
 		self._log.info("Starting HTTP server")
@@ -385,7 +399,7 @@ class EditMonacoPlugin(BeetsPlugin):
 				continue
 
 			id_ = int(old_dict["id"])
-			apply_(obj_by_id[id_], new_dict)
+			dict_to_obj(obj_by_id[id_], new_dict)
 
 	def save_changes(self, objs: list[Item] | list[Album]) -> None:
 		"""Save a list of updated Model objects to the database."""
@@ -462,10 +476,10 @@ if __name__ == "__main__":
 		Item(id=1001, track=2, title="title2", artist="artist2", format="aac"),
 	]
 	fields = ["id", "format", "track", "title", "artist", "format"]
-	data_original = pd.DataFrame([flatten(obj, fields) for obj in data])
+	data_original = pd.DataFrame([obj_to_dict(obj, fields) for obj in data])
 
 	plugin.edit(_album=False, objs=data, fields=fields)
-	data_modified = pd.DataFrame([flatten(obj, fields) for obj in data])
+	data_modified = pd.DataFrame([obj_to_dict(obj, fields) for obj in data])
 
 	print("Original:\n", data_original)
 	print("Modified:\n", data_modified)
