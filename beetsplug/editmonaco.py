@@ -162,13 +162,19 @@ class EditMonacoPlugin(BeetsPlugin):
 		self.edit(opts.album, objs, fields)
 
 	async def serve_websocket(self) -> None:
-		self.websocket_server = await websockets.serve(
-			self.websocket_handler,
-			"",
-			self.websocket_port,
-		)
 		logging.info("Serving websocket on port %s", self.websocket_port)
-		await self.websocket_server.wait_closed()
+		while True:
+			self.websocket_server = await websockets.serve(
+				self.websocket_handler,
+				"",
+				self.websocket_port,
+			)
+			await self.websocket_server.wait_closed()
+
+			if self.success:
+				break
+
+			logging.warning("Attempting to reconnect...")
 
 	def serve_http(self) -> None:
 		http_handler = http.server.SimpleHTTPRequestHandler
@@ -218,11 +224,11 @@ class EditMonacoPlugin(BeetsPlugin):
 							print(f"Warning: Could not convert column {column} to {self.old_data[column].dtype}")
 
 					print("Returning data processed")
-					break
+					self.http_server.shutdown()
+					self.websocket_server.close()
+					return
 		except websockets.exceptions.ConnectionClosedOK:
-			logging.info("Websocket closed! Page probably closed.")
-		finally:
-			self.http_server.shutdown()
+			logging.warning("Websocket unexpectedly closed, will attempt to re-open")
 			self.websocket_server.close()
 
 	async def populate_websocket(self, websocket: websockets.server.WebSocketServerProtocol) -> None:
