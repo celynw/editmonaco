@@ -2,14 +2,18 @@ html, body {
 	height: 100%;
 	margin: 0;
 	padding: 0;
-	overflow: hidden; /* Prevent scrollbars */
-	font-family: system-ui,Ubuntu,Droid Sans,sans-serif;
+}
+
+.app {
+	display: flex;
+	height: 100%;
 }
 
 .column {
-	float: left;
 	height: 100%;
+	min-width: 200px;
 	border: 0;
+	overflow-y: hidden;
 }
 
 .statusbar {
@@ -54,7 +58,7 @@ html, body {
 }
 
 .button {
-	position: absolute;
+	position: fixed;
 	z-index: 9999;
 	right: 8px;
 	bottom: 31px;
