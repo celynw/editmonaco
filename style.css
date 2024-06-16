@@ -6,7 +6,7 @@ html, body {
 	font-family: system-ui,Ubuntu,Droid Sans,sans-serif;
 }
 
-.field {
+.column {
 	float: left;
 	height: 100%;
 	border: 0;

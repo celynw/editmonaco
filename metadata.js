@@ -53,30 +53,30 @@ require(["vs/editor/editor.main"], function () {
 			var editors = []; // To be populated in onmessage
 			// Create one editor column for each field
 			fields.forEach(function (field_name) {
-				var field = document.createElement("div");
-				field.id = field_name;
-				field.className = "field";
-				field.style.width = 100 / (fields.length - 1) + "%";
+				var column = document.createElement("div");
+				column.id = field_name;
+				column.className = "column";
+				column.style.width = 100 / (fields.length - 1) + "%";
 				if (field_name === "id") {
-					field.style.display = "none";
+					column.style.display = "none";
 				}
-				document.body.appendChild(field);
+				document.body.appendChild(column);
 
 				var column_name = document.createElement("div");
 				column_name.className = "column_name no-select";
 				column_name.innerHTML = field_name;
-				field.appendChild(column_name)
+				column.appendChild(column_name)
 
 				var editor = document.createElement("div");
 				editors.push(
-					monaco.editor.create(field, {
+					monaco.editor.create(column, {
 						language: "plaintext",
 						theme: "dark-theme",
 						// automaticLayout: true,
 						readOnly: field_name === "id",
 					})
 				);
-				field.appendChild(editor)
+				column.appendChild(editor)
 			});
 
 			// Populate the editors line-by-line
