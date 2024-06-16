@@ -92,12 +92,15 @@ require(["vs/editor/editor.main"], function () {
 				// Synchronise lines
 				editors.forEach(function (editor, index) {
 					editor.onDidChangeCursorPosition(function (e) {
-						var newLineNumber = e.position.lineNumber;
-						editors.forEach(function (otherEditor, otherIndex) {
-							if (otherIndex !== index) {
-								otherEditor.setPosition({ lineNumber: newLineNumber, column: 1 });
-							}
-						});
+						if (e.source === "api") {
+							editor.setPosition({ lineNumber: e.position.lineNumber, column: e.position.column });
+						} else {
+							editors.forEach(function (otherEditor, otherIndex) {
+								if (otherIndex !== index) {
+									otherEditor.setPosition({ lineNumber: e.position.lineNumber, column: 1 });
+								}
+							});
+						}
 					});
 				});
 
