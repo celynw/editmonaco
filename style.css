@@ -1,7 +1,9 @@
-html, body {
+html,
+body {
 	height: 100%;
 	margin: 0;
 	padding: 0;
+	font-family: system-ui, Ubuntu, Droid Sans, sans-serif;
 }
 
 .app {
@@ -28,14 +30,18 @@ html, body {
 	/* TODO Don't overlap the editors, but leave a gap at the bottom */
 	z-index: 9999;
 }
-.left-items, .right-items {
+
+.left-items,
+.right-items {
 	display: flex;
 }
+
 .right-items {
 	flex-direction: row-reverse;
 }
+
 .statusbar-item {
-	margin: 0 10px; /* adjust as needed */
+	margin: 0 10px;
 }
 
 .column_name {
@@ -53,6 +59,7 @@ html, body {
 	padding-left: 11px;
 	cursor: pointer;
 }
+
 .column_name:hover {
 	background-color: #347890;
 }
@@ -69,6 +76,7 @@ html, body {
 	color: rgba(147, 161, 161);
 	box-shadow: rgba(0, 0, 0, 0.36) 0px 0px 8px 2px;
 }
+
 .button:hover {
 	background-color: #347890;
 	cursor: pointer;
@@ -76,7 +84,10 @@ html, body {
 
 .no-select {
 	user-select: none;
-	-webkit-user-select: none; /* Safari */
-	-moz-user-select: none; /* Firefox */
-	-ms-user-select: none; /* IE/Edge */
+	-webkit-user-select: none;
+	/* Safari */
+	-moz-user-select: none;
+	/* Firefox */
+	-ms-user-select: none;
+	/* IE/Edge */
 }
