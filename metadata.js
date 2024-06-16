@@ -57,15 +57,15 @@ require(["vs/editor/editor.main"], function () {
 				var editors = [];
 
 				fields.forEach(function (field_name) {
-					// For each metadata field, create a column and put directly into the body
+					// For each metadata field, create a column directly in the body
 					var column_div = document.createElement("div");
+					document.body.appendChild(column_div);
 					column_div.id = field_name;
 					column_div.className = "column";
 					column_div.style.width = 100 / (fields.length - 1) + "%";
 					if (field_name === "id") {
 						column_div.style.display = "none";
 					}
-					document.body.appendChild(column_div);
 
 					// Within the column, create a div for the field name
 					var column_name = document.createElement("div");
