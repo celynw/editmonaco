@@ -163,7 +163,7 @@ class EditMonacoPlugin(BeetsPlugin):
 
 	async def serve_websocket(self) -> None:
 		self.websocket_server = await websockets.serve(
-			self.handler,
+			self.websocket_handler,
 			"",
 			self.websocket_port,
 		)
@@ -171,12 +171,12 @@ class EditMonacoPlugin(BeetsPlugin):
 		await self.websocket_server.wait_closed()
 
 	def serve_http(self) -> None:
-		handler = http.server.SimpleHTTPRequestHandler
+		http_handler = http.server.SimpleHTTPRequestHandler
 		server_ready = threading.Event()
 
 		def _server_thread() -> None:
 			nonlocal server_ready
-			with http.server.HTTPServer(("", self.http_port), handler) as self.http_server:
+			with http.server.HTTPServer(("", self.http_port), http_handler) as self.http_server:
 				server_ready.set()
 				logging.info("Serving HTTP on port %s", self.http_port)
 				self.http_server.serve_forever()
@@ -187,7 +187,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		server_ready.wait()
 		webbrowser.open(f"http://localhost:{self.http_port}")
 
-	async def handler(self, websocket: websockets.server.WebSocketServerProtocol) -> None:
+	async def websocket_handler(self, websocket: websockets.server.WebSocketServerProtocol) -> None:
 		try:
 			while True:
 				message = await websocket.recv()
