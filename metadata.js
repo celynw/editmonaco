@@ -52,7 +52,6 @@ require(["vs/editor/editor.main"], function () {
 			fields = Object.keys(message[0]);
 			var editors = []; // To be populated in onmessage
 			// Create one editor column for each field
-			// TODO custom sort, I believe the current sort is based on field order in beets.library.Item
 			fields.forEach(function (field_name) {
 				var field = document.createElement("div");
 				field.id = field_name;
