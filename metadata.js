@@ -81,6 +81,14 @@ require(["vs/editor/editor.main"], function () {
 							theme: "dark-theme",
 							// automaticLayout: true,
 							readOnly: field_name === "id",
+							scrollbar: {
+								vertical: "hidden",
+								horizontal: "hidden",
+							},
+							minimap: {
+								enabled: false,
+							},
+							lineNumbersMinChars: 0,
 						})
 					);
 				});
