@@ -73,8 +73,7 @@ require(["vs/editor/editor.main"], function () {
 					column_name.innerHTML = field_name;
 					column_div.appendChild(column_name)
 
-					// Within the column, create a div for the editor
-					var editor_div = document.createElement("div");
+					// Within the column, editor divs (appended automatically)
 					editors.push(
 						monaco.editor.create(column_div, {
 							language: "plaintext",
@@ -83,7 +82,6 @@ require(["vs/editor/editor.main"], function () {
 							readOnly: field_name === "id",
 						})
 					);
-					column_div.appendChild(editor_div)
 				});
 
 				// Populate the editors line-by-line
