@@ -44,15 +44,16 @@ require(["vs/editor/editor.main"], function () {
 	};
 	socket.onmessage = function (event) {
 		try {
-			// Receives a list of dicts
-			// Dict keys are the same for each list element
-			// Create one column for each key
-			// The editor value should be a newline-separated list of values for that key
+			// Expects to receive a list of dicts
+			// - Each list element dict has the same keys
+			// - We will create one column for each key
+			// - We will join the values list with newlines and put into the editor for each column
 			var message = JSON.parse(event.data);
 			fields = Object.keys(message[0]);
-			var editors = []; // To be populated in onmessage
-			// Create one editor column for each field
+			var editors = [];
+
 			fields.forEach(function (field_name) {
+				// For each metadata field, create a column and put directly into the body
 				var column = document.createElement("div");
 				column.id = field_name;
 				column.className = "column";
@@ -62,11 +63,13 @@ require(["vs/editor/editor.main"], function () {
 				}
 				document.body.appendChild(column);
 
+				// Within the column, create a div for the field name
 				var column_name = document.createElement("div");
 				column_name.className = "column_name no-select";
 				column_name.innerHTML = field_name;
 				column.appendChild(column_name)
 
+				// Within the column, create a div for the editor
 				var editor = document.createElement("div");
 				editors.push(
 					monaco.editor.create(column, {
