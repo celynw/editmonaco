@@ -1,5 +1,6 @@
 aiofiles
 beets
+kellog
 pandas
 rich
 websockets

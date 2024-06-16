@@ -23,6 +23,7 @@ from beets.library import Item, Library
 from beets.plugins import BeetsPlugin
 from beets.ui import Subcommand
 from beets.ui.commands import PromptChoice, _do_query
+from kellog import critical, debug, error, info, warning
 
 if TYPE_CHECKING:
 	import optparse
@@ -162,7 +163,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		self.edit(opts.album, objs, fields)
 
 	async def serve_websocket(self) -> None:
-		logging.info("Serving websocket on port %s", self.websocket_port)
+		info(f"Serving websocket on port {self.websocket_port}")
 		while True:
 			self.websocket_server = await websockets.serve(
 				self.websocket_handler,
@@ -174,7 +175,7 @@ class EditMonacoPlugin(BeetsPlugin):
 			if self.success:
 				break
 
-			logging.warning("Attempting to reconnect...")
+			warning("Attempting to reconnect...")
 
 	def serve_http(self) -> None:
 		http_handler = http.server.SimpleHTTPRequestHandler
@@ -184,7 +185,7 @@ class EditMonacoPlugin(BeetsPlugin):
 			nonlocal server_ready
 			with http.server.HTTPServer(("", self.http_port), http_handler) as self.http_server:
 				server_ready.set()
-				logging.info("Serving HTTP on port %s", self.http_port)
+				info(f"Serving HTTP on port {self.http_port}")
 				self.http_server.serve_forever()
 
 		self.server_thread = threading.Thread(target=_server_thread)
@@ -197,7 +198,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		try:
 			while True:
 				message = await websocket.recv()
-				logging.debug(message)
+				debug(message)
 				try:
 					# Normal operation, this is what is returned when editing is done
 					data = json.loads(message)
@@ -206,8 +207,8 @@ class EditMonacoPlugin(BeetsPlugin):
 					if message == "Socket connected":
 						await self.populate_websocket(websocket)
 				except Exception as e:
-					print(f"Message: {message}")  # All error messages
-					print(e)
+					error(e)
+					error(f"Message: {message}")  # All error messages
 				else:
 					self.success = True
 					self.new_data = pd.DataFrame(data)
@@ -221,14 +222,14 @@ class EditMonacoPlugin(BeetsPlugin):
 							# Handle the case where conversion is not possible
 							# This could be due to invalid data formats, etc.
 							# You might want to log this or handle it as per your requirements
-							print(f"Warning: Could not convert column {column} to {self.old_data[column].dtype}")
+							warning(f"Could not convert column {column} to {self.old_data[column].dtype}")
 
-					print("Returning data processed")
+					debug("Returning data processed")
 					self.http_server.shutdown()
 					self.websocket_server.close()
 					return
 		except websockets.exceptions.ConnectionClosedOK:
-			logging.warning("Websocket unexpectedly closed, will attempt to re-open")
+			warning("Websocket unexpectedly closed, will attempt to re-open")
 			self.websocket_server.close()
 
 	async def populate_websocket(self, websocket: websockets.server.WebSocketServerProtocol) -> None:
@@ -412,7 +413,7 @@ class EditMonacoPlugin(BeetsPlugin):
 		# Save to the database and possibly write tags
 		for ob in objs:
 			if ob._dirty:  # noqa: SLF001
-				logging.debug("Saving changes to %s", ob)
+				debug(f"Saving changes to {ob}")
 				ob.try_sync(ui.should_write(), ui.should_move())
 
 	def before_choose_candidate_listener(self, _session: TerminalImportSession, task: ImportTask) -> list[PromptChoice]:
