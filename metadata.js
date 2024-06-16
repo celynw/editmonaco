@@ -58,32 +58,32 @@ require(["vs/editor/editor.main"], function () {
 
 				fields.forEach(function (field_name) {
 					// For each metadata field, create a column and put directly into the body
-					var column = document.createElement("div");
-					column.id = field_name;
-					column.className = "column";
-					column.style.width = 100 / (fields.length - 1) + "%";
+					var column_div = document.createElement("div");
+					column_div.id = field_name;
+					column_div.className = "column";
+					column_div.style.width = 100 / (fields.length - 1) + "%";
 					if (field_name === "id") {
-						column.style.display = "none";
+						column_div.style.display = "none";
 					}
-					document.body.appendChild(column);
+					document.body.appendChild(column_div);
 
 					// Within the column, create a div for the field name
 					var column_name = document.createElement("div");
 					column_name.className = "column_name no-select";
 					column_name.innerHTML = field_name;
-					column.appendChild(column_name)
+					column_div.appendChild(column_name)
 
 					// Within the column, create a div for the editor
-					var editor = document.createElement("div");
+					var editor_div = document.createElement("div");
 					editors.push(
-						monaco.editor.create(column, {
+						monaco.editor.create(column_div, {
 							language: "plaintext",
 							theme: "dark-theme",
 							// automaticLayout: true,
 							readOnly: field_name === "id",
 						})
 					);
-					column.appendChild(editor)
+					column_div.appendChild(editor_div)
 				});
 
 				// Populate the editors line-by-line
