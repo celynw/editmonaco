@@ -104,8 +104,8 @@ def dict_to_obj(obj: Item | Album, data: dict[str, str]) -> None:
 class EditMonacoPlugin(BeetsPlugin):
 	"""Open metadata information in a web-based text editor to let the user edit it."""
 
-	http_port: int = 8888
-	websocket_port: int = 8889
+	http_port: int = 8337
+	websocket_port: int = 8336
 	http_server: http.server.HTTPServer
 	tempfile: Path
 	fields: list[str]

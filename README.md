@@ -52,7 +52,7 @@ git config diff.lockb.binary true
 For development, after running the `beet` command (so that the websocket and server is running), run the following command to enable refreshes when changing the code:
 
 ```bash
-npx browser-sync start --proxy "localhost:8888" --files metadata.js --port 8889 --ui-port 3000
+npx browser-sync start --proxy "localhost:8337" --files metadata.js --port 8338 --ui-port 8339
 ```
 
 ### Program flow

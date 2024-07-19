@@ -40,7 +40,7 @@ require(["vs/editor/editor.main"], function () {
 	}
 
 	function connectWebSocket() {
-		var socket = new WebSocket("ws://localhost:8889");
+		var socket = new WebSocket("ws://localhost:8336");
 
 		socket.onopen = function () {
 			console.log("Socket connected");
