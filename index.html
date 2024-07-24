@@ -7,33 +7,32 @@
 </head>
 
 <body>
-	<div class="app">
+	<div class="app"></div>
 
 	<div class="button no-select submit">Submit</div>
 
 	<script src="node_modules/monaco-editor/min/vs/loader.js"></script>
 	<script src="metadata.js" type="module"></script>
 	<!-- TODO `onbeforeunload` confirm if user wants to close tab -->
-</body>
 
-<footer class="statusbar">
-	<div class="items-container left-items">
-		<div id="status.left.0" class="statusbar-item left compact-right">
-			<a class="statusbar-item-label">left-item-1</a>
+	<footer class="statusbar">
+		<div class="items-container left-items">
+			<div id="status.left.0" class="statusbar-item left compact-right">
+				<a class="statusbar-item-label">left-item-1</a>
+			</div>
+			<div id="status.left.0" class="statusbar-item left compact-right">
+				<a class="statusbar-item-label">left-item-2</a>
+			</div>
 		</div>
-		<div id="status.left.0" class="statusbar-item left compact-right">
-			<a class="statusbar-item-label">left-item-2</a>
+		<div class="items-container right-items">
+			<div id="status.right.2" class="statusbar-item left compact-right">
+				<a class="statusbar-item-label">right-item-1</a>
+			</div>
+			<div id="status.right.2" class="statusbar-item left compact-right">
+				<a class="statusbar-item-label">right-item-2</a>
+			</div>
 		</div>
-	</div>
-	<div class="items-container right-items">
-		<div id="status.right.2" class="statusbar-item left compact-right">
-			<a class="statusbar-item-label">right-item-1</a>
-		</div>
-		<div id="status.right.2" class="statusbar-item left compact-right">
-			<a class="statusbar-item-label">right-item-2</a>
-		</div>
-	</div>
-</footer>
-</div>
+	</footer>
+</body>
 
 </html>
