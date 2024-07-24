@@ -13,38 +13,41 @@ beet editmonaco Coldplay
 > [!NOTE]
 > For now, it only works when this directory is the working directory
 
-> [!NOTE]
-> If running from WSL, set the environment variable to the path to your browser for it to open the page automatically!
-
 This will open the page in your web browser with the current values (it doesn't access the internet).
+
+> [!NOTE]
+> If running from WSL, set the `BROWSER` environment variable to the path to your browser for it to open the page automatically!
+
 Edit to your heart's content, and when you're done, press <kbd>Submit</kbd>
 
 
 ## Development
 
-### Standalone
+### Setup
 
-Run `beetsplug/editmonaco.py` directly, it will start with some dummy data.
-
-### beets
-
-Add the path to this repository to your beets config (typically `~/.config/beets/config.yaml`). For instance:
-
-```yaml
-pluginpath:
-  - ~/PATH/editmonaco/beetsplug
-```
-
-> [!NOTE]
-> You may need to temporarily remove other plugins from the `plugins` list if you're having trouble with dedicated python environments.
-
-### bun
+#### git
 
 From the [bun documentation](https://bun.sh/docs/install/lockfile):
 
 ```bash
 git config diff.lockb.textconv bun
 git config diff.lockb.binary true
+```
+
+### bun
+
+From this directory:
+
+```bash
+bun install
+```
+
+### python
+
+Use your system python, or whatever beets uses!
+
+```bash
+pip install -r beetsplug/requirements.txt
 ```
 
 ### browser-sync
@@ -54,6 +57,24 @@ For development, after running the `beet` command (so that the websocket and ser
 ```bash
 npx browser-sync start --proxy "localhost:8337" --files metadata.js --port 8338 --ui-port 8339
 ```
+
+### Standalone
+
+Run `beetsplug/editmonaco.py` directly, it will start with some dummy data.
+By default, it is set to *not* open the browser automatically, so that [browser-sync](#browser-sync) can be used.
+
+### beets
+
+Add the path to the path where you cloned this repository to your beets config (typically `~/.config/beets/config.yaml`).
+For instance:
+
+```yaml
+pluginpath:
+  - ~/PATH/editmonaco/beetsplug
+```
+
+> [!NOTE]
+> You may need to temporarily remove other plugins from the `plugins` list if you're having trouble with dedicated python environments.
 
 ### Program flow
 
