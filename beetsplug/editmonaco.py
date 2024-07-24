@@ -111,7 +111,7 @@ class EditMonacoPlugin(BeetsPlugin):
 	fields: list[str]
 	success: bool
 
-	def __init__(self) -> None:
+	def __init__(self, *, open_browser: bool = True) -> None:
 		super().__init__()
 		self.success = False
 		self.config.add(
@@ -121,6 +121,8 @@ class EditMonacoPlugin(BeetsPlugin):
 				"itemfields": "track title artist album",
 				# Silently ignore any changes to these fields
 				"ignore_fields": "path",
+				# Open the browser automatically
+				"open_browser": open_browser,
 			},
 		)
 		self.register_listener(
@@ -192,7 +194,8 @@ class EditMonacoPlugin(BeetsPlugin):
 		self.server_thread.daemon = True
 		self.server_thread.start()
 		server_ready.wait()
-		webbrowser.open(f"http://localhost:{self.http_port}")
+		if self.config["open_browser"].get(bool):
+			webbrowser.open(f"http://localhost:{self.http_port}")
 
 	async def websocket_handler(self, websocket: websockets.server.WebSocketServerProtocol) -> None:
 		try:
@@ -477,7 +480,7 @@ if __name__ == "__main__":
 	from rich import print
 
 	logging.basicConfig(level=logging.DEBUG)  # Is 'warning' by default
-	plugin = EditMonacoPlugin()
+	plugin = EditMonacoPlugin(open_browser=False)
 	data = [
 		Item(id=1000, track=1, title="title1", artist="artist1", format="mp3"),
 		Item(id=1001, track=2, title="title2", artist="artist2", format="aac"),
