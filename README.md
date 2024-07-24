@@ -55,8 +55,10 @@ pip install -r beetsplug/requirements.txt
 For development, after running the `beet` command (so that the websocket and server is running), run the following command to enable refreshes when changing the code:
 
 ```bash
-npx browser-sync start --proxy "localhost:8337" --files metadata.js --port 8338 --ui-port 8339
+npx browser-sync start --proxy "localhost:8337" -f metadata.js --port 8338 --ui-port 8339
 ```
+
+I also use the option `-b "$BROWSER"` from WSL.
 
 ### Standalone
 
