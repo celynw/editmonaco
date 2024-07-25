@@ -96,28 +96,22 @@ require(["vs/editor/editor.main"], function () {
 				// Populate the editors line-by-line
 				json_to_editors(editors, message);
 
-				// Synchronise lines
-				editors.forEach(function (editor, index) {
+				// Synchronisation
+				// Includes normal editors and diff editors (original and modified)
+				monaco.editor.getEditors().forEach(function (editor, index) {
+					// Synchronise lines
 					editor.onDidChangeCursorPosition(function (e) {
-						if (e.source === "api") {
-							editor.setPosition({ lineNumber: e.position.lineNumber, column: e.position.column });
-						} else {
-							editors.forEach(function (otherEditor, otherIndex) {
-								if (otherIndex !== index) {
-									otherEditor.setPosition({ lineNumber: e.position.lineNumber, column: 1 });
-								}
-							});
-						}
+						monaco.editor.getEditors().forEach(function (otherEditor, otherIndex) {
+							if (otherIndex !== index && e.source !== "api") {
+								otherEditor.setPosition({ lineNumber: e.position.lineNumber, column: 1 });
+							}
+						});
 					});
-				});
-
-				// Synchronise scrolling
-				editors.forEach(function (editor, index) {
+					// Synchronise scrolling
 					editor.onDidScrollChange(function (e) {
-						var newScrollTop = e.scrollTop;
-						editors.forEach(function (otherEditor, otherIndex) {
-							if (otherIndex !== index) {
-								otherEditor.setScrollTop(newScrollTop);
+						monaco.editor.getEditors().forEach(function (otherEditor, otherIndex) {
+							if (otherIndex !== index && e.source !== "api") {
+								otherEditor.setScrollTop(e.scrollTop);
 							}
 						});
 					});
