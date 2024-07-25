@@ -484,6 +484,12 @@ if __name__ == "__main__":
 	data = [
 		Item(id=1000, track=1, title="title1", artist="artist1", format="mp3"),
 		Item(id=1001, track=2, title="title2", artist="artist2", format="aac"),
+		Item(id=1002, track=3, title="title3", artist="artist3", format="flac"),
+		Item(id=1003, track=4, title="title4", artist="artist4", format="opus"),
+		Item(id=1004, track=5, title="title5", artist="artist5", format="wav"),
+		Item(id=1005, track=6, title="title6", artist="artist6", format="m4a"),
+		Item(id=1006, track=7, title="title7", artist="artist7", format="alac"),
+		Item(id=1007, track=8, title="title8", artist="artist8", format="ape"),
 	]
 	fields = ["id", "format", "track", "title", "artist", "format"]
 	data_original = pd.DataFrame([obj_to_dict(obj, fields) for obj in data])
