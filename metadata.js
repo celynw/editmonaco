@@ -11,7 +11,8 @@ require(["vs/editor/editor.main"], function () {
 		colors: {}
 	});
 
-	function json_to_editors(editors, message, fields) {
+	function json_to_editors(message, fields) {
+		var editors = monaco.editor.getEditors();
 		fields.forEach(function (field_name, index) {
 			var editor = editors[index];
 			var lines = message.map(row => row[field_name]);
@@ -53,7 +54,6 @@ require(["vs/editor/editor.main"], function () {
 			// - We will join the values list with newlines and put into the editor for each column
 			var message = JSON.parse(event.data);
 			var fields = Object.keys(message[0]);
-			var editors = [];
 
 			fields.forEach(function (field_name) {
 				// For each metadata field, create a column directly in the body
@@ -80,27 +80,25 @@ require(["vs/editor/editor.main"], function () {
 				// Append the new divs to the column_div
 				column_div.appendChild(editor_div);
 
-				// Within the column, editor divs (appended automatically)
-				editors.push(
-					monaco.editor.create(editor_div, {
-						language: "plaintext",
-						theme: "dark-theme",
-						// automaticLayout: true,
-						readOnly: field_name === "id",
-						scrollbar: {
-							vertical: "hidden",
-							horizontal: "hidden",
-						},
-						minimap: {
-							enabled: false,
-						},
-						lineNumbersMinChars: 0,
-					})
-				);
+				// Create editors
+				let editor = monaco.editor.create(editor_div, {
+					language: "plaintext",
+					theme: "dark-theme",
+					// automaticLayout: true,
+					readOnly: field_name === "id",
+					scrollbar: {
+						vertical: "hidden",
+						horizontal: "hidden",
+					},
+					minimap: {
+						enabled: false,
+					},
+					lineNumbersMinChars: 0,
+				});
 			});
 
 			// Populate the editors line-by-line
-			json_to_editors(editors, message, fields);
+			json_to_editors(message, fields);
 
 			// Editor callbacks
 			monaco.editor.getEditors().forEach(function (editor, index) {
