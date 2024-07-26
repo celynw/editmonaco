@@ -227,3 +227,44 @@ export const diff_editor_config = {
 	splitViewDefaultRatio: 0.5,
 	useInlineViewWhenSpaceIsLimited: false,
 }
+
+export const editor_keybinds = [];
+
+require.config({ paths: { vs: "node_modules/monaco-editor/min/vs" } });
+require(["vs/editor/editor.main"], function () {
+	// Check the default keybindings by running:
+	// console.log(editor._standaloneKeybindingService._getResolver()._defaultKeybindings);
+
+	// Keycodes here:
+	// https://microsoft.github.io/monaco-editor/typedoc/classes/KeyMod.html
+	// https://microsoft.github.io/monaco-editor/typedoc/enums/KeyCode.html
+	const disabled_keybinds = [
+		monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.UpArrow, // cursorUpSelect
+		monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.DownArrow, // cursorDownSelect
+		monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Home, // cursorTopSelect
+		monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.End, // cursorBottomSelect
+		monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.UpArrow, // editor.action.copyLinesUpAction
+		monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.DownArrow, // editor.action.copyLinesDownAction
+		monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyK, // editor.action.deleteLines
+		monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL, // expandLineSelection
+		monaco.KeyMod.CtrlCmd | monaco.KeyCode.BracketRight, // editor.action.indentLines
+		monaco.KeyMod.CtrlCmd | monaco.KeyCode.BracketLeft, // editor.action.outdentLines
+		monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, // editor.action.insertLineAfter
+		monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, // editor.action.insertLineBefore
+		monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyA, // editor.action.selectAll
+		monaco.KeyMod.Shift | monaco.KeyCode.Tab, // outdent
+		monaco.KeyCode.Tab, // tab
+		monaco.KeyCode.F7, // editor.action.accessibleDiffViewer.next
+		monaco.KeyMod.Shift | monaco.KeyCode.F7, // editor.action.accessibleDiffViewer.prev
+		monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.RightArrow, // editor.action.smartSelect.expand
+		monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.LeftArrow, // editor.action.smartSelect.shrink
+	]
+
+	// TODO these can still be called from the F1 menu
+	disabled_keybinds.forEach(keybind => {
+		editor_keybinds.push({
+			keybinding: keybind,
+			command: null,
+		});
+	});
+});

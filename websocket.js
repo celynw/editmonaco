@@ -1,4 +1,4 @@
-import { diff_editor_config, editor_config, global_editor_config } from "./config.js";
+import { diff_editor_config, editor_config, editor_keybinds, global_editor_config } from "./config.js";
 import { editors_to_json, getParentDiffEditor, json_to_content, swap_to_diff_editor, swap_to_normal_editor } from "./editors.js";
 
 var app_div = document.querySelector(".app");
@@ -47,6 +47,9 @@ export function connectWebSocket() {
 			// Append the new divs to the column_div
 			column_div.appendChild(editor_div);
 			column_div.appendChild(diff_editor_div);
+
+			// Set keybindings
+			monaco.editor.addKeybindingRules(editor_keybinds);
 
 			// Create editors
 			let editor = monaco.editor.create(editor_div, {
