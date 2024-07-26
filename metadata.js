@@ -102,12 +102,12 @@ require(["vs/editor/editor.main"], function () {
 			// Populate the editors line-by-line
 			json_to_editors(editors, message, fields);
 
-			// Synchronisation
+			// Editor callbacks
 			monaco.editor.getEditors().forEach(function (editor, index) {
-				// Synchronise lines
+				// Synchronise line changes
 				editor.onDidChangeCursorPosition(function (e) {
 					monaco.editor.getEditors().forEach(function (otherEditor, otherIndex) {
-						if (otherIndex !== index && e.source !== "api") {
+						if (otherEditor !== editor && e.source !== "api") {
 							otherEditor.setPosition({ lineNumber: e.position.lineNumber, column: 1 });
 						}
 					});
@@ -115,7 +115,8 @@ require(["vs/editor/editor.main"], function () {
 				// Synchronise scrolling
 				editor.onDidScrollChange(function (e) {
 					monaco.editor.getEditors().forEach(function (otherEditor, otherIndex) {
-						if (otherIndex !== index && e.source !== "api") {
+						// There is no e.source for scroll events, but it should be OK
+						if (otherEditor !== editor) {
 							otherEditor.setScrollTop(e.scrollTop);
 						}
 					});
