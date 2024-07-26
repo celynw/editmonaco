@@ -419,9 +419,9 @@ class EditMonacoPlugin(BeetsPlugin):
 				debug(f"Saving changes to {ob}")
 				ob.try_sync(ui.should_write(), ui.should_move())
 
-	def before_choose_candidate_listener(self, _session: TerminalImportSession, task: ImportTask) -> list[PromptChoice]:
+	def before_choose_candidate_listener(self, session: TerminalImportSession, task: ImportTask) -> list[PromptChoice]:  # noqa: ARG002
 		"""Append "Edit" and "edit Candidates" (if applicable) choices to the interactive importer prompt."""
-		choices = [PromptChoice("d", "eDit", self.importer_edit_callback)]
+		choices = [PromptChoice("d", "eDitmonaco", self.importer_edit_callback)]
 		if task.candidates:
 			choices.append(
 				PromptChoice(
@@ -433,7 +433,7 @@ class EditMonacoPlugin(BeetsPlugin):
 
 		return choices
 
-	def importer_edit_callback(self, _session: TerminalImportSession, task: ImportTask) -> action | None:
+	def importer_edit_callback(self, session: TerminalImportSession, task: ImportTask) -> action | None:  # noqa: ARG002
 		"""Invoke the functionality during an interactive import session on the *original* item tags."""
 		# Assign negative temporary ids to Items that are not in the database yet
 		# By using negative values, no clash with items in the database can occur
