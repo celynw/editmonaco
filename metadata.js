@@ -1,4 +1,3 @@
-var fields = []; // Dynamically set based on the data received from beets
 var app_div = document.querySelector(".app");
 
 require.config({ paths: { vs: "node_modules/monaco-editor/min/vs" } });
@@ -12,7 +11,7 @@ require(["vs/editor/editor.main"], function () {
 		colors: {}
 	});
 
-	function json_to_editors(editors, message) {
+	function json_to_editors(editors, message, fields) {
 		fields.forEach(function (field_name, index) {
 			var editor = editors[index];
 			var lines = message.map(row => row[field_name]);
@@ -53,7 +52,7 @@ require(["vs/editor/editor.main"], function () {
 			// - We will create one column for each key
 			// - We will join the values list with newlines and put into the editor for each column
 			var message = JSON.parse(event.data);
-			fields = Object.keys(message[0]);
+			var fields = Object.keys(message[0]);
 			var editors = [];
 
 			fields.forEach(function (field_name) {
@@ -93,7 +92,7 @@ require(["vs/editor/editor.main"], function () {
 			});
 
 			// Populate the editors line-by-line
-			json_to_editors(editors, message);
+			json_to_editors(editors, message, fields);
 
 			// Synchronisation
 			monaco.editor.getEditors().forEach(function (editor, index) {
