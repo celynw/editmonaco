@@ -20,20 +20,15 @@ require(["vs/editor/editor.main"], function () {
 	}
 
 	function editors_to_json() {
-		var editorsData = monaco.editor.getEditors().map(editor => editor.getValue());
-		console.log(editorsData);
-
-		// Assume all editors have the same number of lines
-		let lineCount = editorsData[0].split("\n").length;
-		let jsonData = [];
-		for (let i = 0; i < lineCount; i++) {
-			let row = {};
-			editorsData.forEach((editorContent, index) => {
-				let lines = editorContent.split("\n");
-				row[fields[index]] = lines[i] || ""; // Use an empty string if the line does not exist
+		var editors = monaco.editor.getEditors().filter(editor => editor.editor_type === "normal");
+		var jsonData = editors.reduce((acc, editor) => {
+			let lines = editor.getValue().split("\n");
+			lines.forEach((line, index) => {
+				if (!acc[index]) acc[index] = {};
+				acc[index][editor.field_name] = line;
 			});
-			jsonData.push(row);
-		}
+			return acc;
+		}, []);
 
 		return JSON.stringify(jsonData, null);
 	}
