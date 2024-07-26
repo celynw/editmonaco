@@ -48,77 +48,72 @@ require(["vs/editor/editor.main"], function () {
 		};
 
 		socket.onmessage = function (event) {
-			try {
-				// Expects to receive a list of dicts
-				// - Each list element dict has the same keys
-				// - We will create one column for each key
-				// - We will join the values list with newlines and put into the editor for each column
-				var message = JSON.parse(event.data);
-				fields = Object.keys(message[0]);
-				var editors = [];
+			// Expects to receive a list of dicts
+			// - Each list element dict has the same keys
+			// - We will create one column for each key
+			// - We will join the values list with newlines and put into the editor for each column
+			var message = JSON.parse(event.data);
+			fields = Object.keys(message[0]);
+			var editors = [];
 
-				fields.forEach(function (field_name) {
-					// For each metadata field, create a column directly in the body
-					var column_div = document.createElement("div");
-					app_div.appendChild(column_div);
-					column_div.id = field_name;
-					column_div.className = "column";
-					column_div.style.width = 100 / (fields.length - 1) + "%";
-					if (field_name === "id") {
-						column_div.style.display = "none";
-					}
+			fields.forEach(function (field_name) {
+				// For each metadata field, create a column directly in the body
+				var column_div = document.createElement("div");
+				app_div.appendChild(column_div);
+				column_div.id = field_name;
+				column_div.className = "column";
+				column_div.style.width = 100 / (fields.length - 1) + "%";
+				if (field_name === "id") {
+					column_div.style.display = "none";
+				}
 
-					// Within the column, create a div for the field name
-					var column_name = document.createElement("div");
-					column_name.className = "column_name no-select";
-					column_name.innerHTML = field_name;
-					column_div.appendChild(column_name)
+				// Within the column, create a div for the field name
+				var column_name = document.createElement("div");
+				column_name.className = "column_name no-select";
+				column_name.innerHTML = field_name;
+				column_div.appendChild(column_name)
 
-					// Within the column, editor divs (appended automatically)
-					editors.push(
-						monaco.editor.create(column_div, {
-							language: "plaintext",
-							theme: "dark-theme",
-							// automaticLayout: true,
-							readOnly: field_name === "id",
-							scrollbar: {
-								vertical: "hidden",
-								horizontal: "hidden",
-							},
-							minimap: {
-								enabled: false,
-							},
-							lineNumbersMinChars: 0,
-						})
-					);
-				});
+				// Within the column, editor divs (appended automatically)
+				editors.push(
+					monaco.editor.create(column_div, {
+						language: "plaintext",
+						theme: "dark-theme",
+						// automaticLayout: true,
+						readOnly: field_name === "id",
+						scrollbar: {
+							vertical: "hidden",
+							horizontal: "hidden",
+						},
+						minimap: {
+							enabled: false,
+						},
+						lineNumbersMinChars: 0,
+					})
+				);
+			});
 
-				// Populate the editors line-by-line
-				json_to_editors(editors, message);
+			// Populate the editors line-by-line
+			json_to_editors(editors, message);
 
-				// Synchronisation
-				// Includes normal editors and diff editors (original and modified)
-				monaco.editor.getEditors().forEach(function (editor, index) {
-					// Synchronise lines
-					editor.onDidChangeCursorPosition(function (e) {
-						monaco.editor.getEditors().forEach(function (otherEditor, otherIndex) {
-							if (otherIndex !== index && e.source !== "api") {
-								otherEditor.setPosition({ lineNumber: e.position.lineNumber, column: 1 });
-							}
-						});
-					});
-					// Synchronise scrolling
-					editor.onDidScrollChange(function (e) {
-						monaco.editor.getEditors().forEach(function (otherEditor, otherIndex) {
-							if (otherIndex !== index && e.source !== "api") {
-								otherEditor.setScrollTop(e.scrollTop);
-							}
-						});
+			// Synchronisation
+			monaco.editor.getEditors().forEach(function (editor, index) {
+				// Synchronise lines
+				editor.onDidChangeCursorPosition(function (e) {
+					monaco.editor.getEditors().forEach(function (otherEditor, otherIndex) {
+						if (otherIndex !== index && e.source !== "api") {
+							otherEditor.setPosition({ lineNumber: e.position.lineNumber, column: 1 });
+						}
 					});
 				});
-			} catch (error) {
-				socket.send(error.message);
-			};
+				// Synchronise scrolling
+				editor.onDidScrollChange(function (e) {
+					monaco.editor.getEditors().forEach(function (otherEditor, otherIndex) {
+						if (otherIndex !== index && e.source !== "api") {
+							otherEditor.setScrollTop(e.scrollTop);
+						}
+					});
+				});
+			});
 
 			document.querySelector(".button.submit").addEventListener("click", function () {
 				socket.send(editors_to_json(editors));
