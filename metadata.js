@@ -11,13 +11,12 @@ require(["vs/editor/editor.main"], function () {
 		colors: {}
 	});
 
-	function json_to_editors(message, fields) {
-		var editors = monaco.editor.getEditors();
-		fields.forEach(function (field_name, index) {
-			var editor = editors[index];
+	function json_to_content(message, fields) {
+		return fields.reduce(function (result, field_name) {
 			var lines = message.map(row => row[field_name]);
-			editor.setValue(lines.join("\n"));
-		});
+			result[field_name] = lines.join("\n");
+			return result;
+		}, {});
 	}
 
 	function editors_to_json() {
@@ -97,7 +96,11 @@ require(["vs/editor/editor.main"], function () {
 				});
 				editor.field_name = field_name;
 			// Populate the editors line-by-line
-			json_to_editors(message, fields);
+			var original_content = json_to_content(message, fields);
+			monaco.editor.getEditors().forEach(function (editor, index) {
+				editor.original_content = original_content[editor.field_name];
+				editor.setValue(editor.original_content);
+			});
 
 			// Editor callbacks
 			monaco.editor.getEditors().forEach(function (editor, index) {
