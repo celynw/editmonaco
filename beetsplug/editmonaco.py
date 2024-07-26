@@ -478,6 +478,7 @@ class EditMonacoPlugin(BeetsPlugin):
 
 if __name__ == "__main__":
 	from rich import print
+	from rich.table import Table
 
 	logging.basicConfig(level=logging.DEBUG)  # Is 'warning' by default
 	plugin = EditMonacoPlugin(open_browser=False)
@@ -497,6 +498,19 @@ if __name__ == "__main__":
 	plugin.edit(_album=False, objs=data, fields=fields)
 	data_modified = pd.DataFrame([obj_to_dict(obj, fields) for obj in data])
 
-	print("Original:\n", data_original)
-	print("Modified:\n", data_modified)
-	print("Differences:\n", data_original.compare(data_modified))
+	table = Table(title="Differences")
+	for column in data_original.columns:
+		table.add_column(column, justify="center")
+	# Print original values in white, and changed values in red -> green
+	for index, _ in data_original.iterrows():
+		row_data = []
+		for col in data_original.columns:
+			original_val = data_original.loc[index, col]
+			modified_val = data_modified.loc[index, col]
+			if original_val != modified_val:
+				row_data.append(f"[red]{original_val}[/red] -> [green]{modified_val}[/green]")
+			else:
+				row_data.append(f"[white]{original_val}[/white]")
+		table.add_row(*row_data)
+
+	print(table)
