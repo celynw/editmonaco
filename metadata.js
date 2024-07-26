@@ -95,8 +95,7 @@ require(["vs/editor/editor.main"], function () {
 					},
 					lineNumbersMinChars: 0,
 				});
-			});
-
+				editor.field_name = field_name;
 			// Populate the editors line-by-line
 			json_to_editors(message, fields);
 
