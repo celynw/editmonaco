@@ -19,8 +19,8 @@ require(["vs/editor/editor.main"], function () {
 		});
 	}
 
-	function editors_to_json(editors) {
-		var editorsData = editors.map(editor => editor.getValue());
+	function editors_to_json() {
+		var editorsData = monaco.editor.getEditors().map(editor => editor.getValue());
 		console.log(editorsData);
 
 		// Assume all editors have the same number of lines
@@ -124,7 +124,7 @@ require(["vs/editor/editor.main"], function () {
 			});
 
 			document.querySelector(".button.submit").addEventListener("click", function () {
-				socket.send(editors_to_json(editors));
+				socket.send(editors_to_json());
 			});
 		};
 
