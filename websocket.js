@@ -1,4 +1,4 @@
-import { common_editor_config, common_global_config } from "./config.js";
+import { diff_editor_config, editor_config, global_editor_config } from "./config.js";
 import { editors_to_json, getParentDiffEditor, json_to_content, swap_to_diff_editor, swap_to_normal_editor } from "./editors.js";
 
 var app_div = document.querySelector(".app");
@@ -50,8 +50,8 @@ export function connectWebSocket() {
 
 			// Create editors
 			let editor = monaco.editor.create(editor_div, {
-				...common_global_config,
-				...common_editor_config,
+				...global_editor_config,
+				...editor_config,
 				readOnly: field_name === "id",
 			});
 			editor.field_name = field_name;
@@ -59,11 +59,10 @@ export function connectWebSocket() {
 
 			// Create diff editors
 			let diff_editor = monaco.editor.createDiffEditor(diff_editor_div, {
-				...common_global_config,
-				...common_editor_config,
-				renderSideBySide: true,
-				useInlineViewWhenSpaceIsLimited: false,
-				enableSplitViewResizing: false,
+				...global_editor_config,
+				...editor_config,
+				...diff_editor_config,
+				readOnly: field_name === "id",
 			});
 			diff_editor.getOriginalEditor().field_name = field_name;
 			diff_editor.getModifiedEditor().field_name = field_name;

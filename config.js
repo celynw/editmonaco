@@ -1,5 +1,5 @@
 // https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IGlobalEditorOptions.html
-export const common_global_config = {
+export const global_editor_config = {
 	autoDetectHighContrast: true,
 	detectIndentation: false,
 	insertSpaces: true,
@@ -17,9 +17,10 @@ export const common_global_config = {
 }
 
 // https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IEditorOptions.html
-export const common_editor_config = {
+export const editor_config = {
 	acceptSuggestionOnCommitCharacter: false,
 	acceptSuggestionOnEnter: "off",
+	autoClosingBrackets: "always",
 	autoClosingComments: "never",
 	autoClosingDelete: "always",
 	autoClosingOvertype: "always",
@@ -34,6 +35,7 @@ export const common_editor_config = {
 	codeLens: false,
 	colorDecorators: false,
 	columnSelection: true,
+	contextmenu: true,
 	copyWithSyntaxHighlighting: true,
 	// https://github.com/microsoft/vscode/issues/168857#issuecomment-1350754858
 	cursorSmoothCaretAnimation: "on",
@@ -204,4 +206,24 @@ export const common_editor_config = {
 	useTabStops: false,
 	wordWrap: "off",
 	wrappingIndent: "indent",
+}
+
+// https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IDiffEditorOptions.html
+export const diff_editor_config = {
+	diffAlgorithm: "classic",
+	diffCodeLens: false,
+	diffWordWrap: "off",
+	enableSplitViewResizing: true,
+	hideUnchangedRegions: {
+		enabled: false,
+	},
+	ignoreTrimWhitespace: false,
+	originalEditable: false,
+	renderGutterMenu: false,
+	renderIndicators: false,
+	renderMarginRevertIcon: true,
+	renderOverviewRuler: true,
+	renderSideBySide: true,
+	splitViewDefaultRatio: 0.5,
+	useInlineViewWhenSpaceIsLimited: false,
 }
