@@ -72,9 +72,17 @@ require(["vs/editor/editor.main"], function () {
 				column_name_div.style.width = "100%";
 				column_div.appendChild(column_name_div)
 
+				// Create separate divs for the editor
+				var editor_div = document.createElement("div");
+				editor_div.className = "column";
+				editor_div.style.width = "100%";
+
+				// Append the new divs to the column_div
+				column_div.appendChild(editor_div);
+
 				// Within the column, editor divs (appended automatically)
 				editors.push(
-					monaco.editor.create(column_div, {
+					monaco.editor.create(editor_div, {
 						language: "plaintext",
 						theme: "dark-theme",
 						// automaticLayout: true,
