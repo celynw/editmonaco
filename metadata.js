@@ -67,10 +67,10 @@ require(["vs/editor/editor.main"], function () {
 				}
 
 				// Within the column, create a div for the field name
-				var column_name = document.createElement("div");
-				column_name.className = "column_name no-select";
-				column_name.innerHTML = field_name;
-				column_div.appendChild(column_name)
+				var column_name_div = document.createElement("div");
+				column_name_div.className = "column_name no-select";
+				column_name_div.innerHTML = field_name;
+				column_div.appendChild(column_name_div)
 
 				// Within the column, editor divs (appended automatically)
 				editors.push(
