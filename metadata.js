@@ -60,7 +60,6 @@ require(["vs/editor/editor.main"], function () {
 				var column_div = document.createElement("div");
 				app_div.appendChild(column_div);
 				column_div.id = field_name;
-				column_div.className = "column";
 				column_div.style.width = 100 / (fields.length - 1) + "%";
 				if (field_name === "id") {
 					column_div.style.display = "none";
@@ -70,6 +69,7 @@ require(["vs/editor/editor.main"], function () {
 				var column_name_div = document.createElement("div");
 				column_name_div.className = "column_name no-select";
 				column_name_div.innerHTML = field_name;
+				column_name_div.style.width = "100%";
 				column_div.appendChild(column_name_div)
 
 				// Within the column, editor divs (appended automatically)
